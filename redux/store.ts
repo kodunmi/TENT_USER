@@ -1,16 +1,39 @@
-import { configureStore } from '@reduxjs/toolkit'
+import { configureStore, combineReducers } from '@reduxjs/toolkit'
 import { emptySplitApi } from '../services'
 import authReducer from '../redux/slices/authSlice'
 import notificationReducer from '../redux/slices/notificationSlice'
+import { 
+  persistReducer,
+  FLUSH,
+  REHYDRATE,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
+ } from 'redux-persist'
+import storage from 'redux-persist/lib/storage'
+
+const reducers = combineReducers({
+  [emptySplitApi.reducerPath]: emptySplitApi.reducer,
+  auth: authReducer,
+  notification: notificationReducer
+});
+
+const persistConfig = {
+  key: 'root',
+  storage
+};
+
+const persistedReducer = persistReducer(persistConfig, reducers);
 
 export const store = configureStore({
-  reducer: {
-    [emptySplitApi.reducerPath]: emptySplitApi.reducer,
-    auth: authReducer,
-    notification: notificationReducer
-  },
+  reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(emptySplitApi.middleware),
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }).concat(emptySplitApi.middleware),
 })
 
 export type RootState = ReturnType<typeof store.getState>

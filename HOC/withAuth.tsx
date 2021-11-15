@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from "next/router";
 import { useAuth } from "../hooks";
 
 export const WithAuth = (WrappedComponent: any) => {
+  useEffect(() => {
+    console.log("wqwwwsws");
+    
+  }, [])
     const { user } = useAuth()
     return (props) => {
       // checks whether we are on client / browser or server.

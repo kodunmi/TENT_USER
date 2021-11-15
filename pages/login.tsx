@@ -2,10 +2,12 @@ import React from 'react'
 import { AuthLayout } from '../layout'
 import styled from 'styled-components'
 import { Box } from '@mui/system'
-import { Button, InputAdornment, TextField, Typography } from '@mui/material'
-import { TentTextField } from '../components'
+import { Button, IconButton, InputAdornment, TextField, Typography } from '@mui/material'
+import { TentTextField, useNoBorder } from '../components'
 import Mail from 'remixicon-react/MailLineIcon'
 import Key from 'remixicon-react/KeyLineIcon'
+import EyeOpen from 'remixicon-react/EyeLineIcon'
+import EyeClosed from 'remixicon-react/EyeCloseLineIcon'
 import Link from 'next/link'
 import { LoginRequest, useLoginMutation } from '../services'
 import { setCredentials } from '../redux'
@@ -19,6 +21,13 @@ import { useDispatch } from 'react-redux'
 const Login = () => {
     const formRef = React.useRef<HTMLFormElement>(null);
     const { enqueueSnackbar } = useSnackbar();
+    const classes = useNoBorder();
+    const [visible, setVisible] = React.useState(false)
+
+
+    const toggleVisibility = () => {
+        setVisible(!visible)
+    }
 
     const [formState, setFormState] = React.useState<LoginRequest>({
         email: '',
@@ -48,8 +57,12 @@ const Login = () => {
                         Sign to your account
                     </Typography>
                     <form ref={formRef}>
-                        <TentTextField
+                        <Typography variant="body1">
+                            Email
+                        </Typography>
+                        <TextField
                             required
+                            variant="outlined"
                             onChange={handleChange}
                             sx={{
                                 border: "none",
@@ -60,7 +73,7 @@ const Login = () => {
                             name="email"
                             type="email"
                             placeholder="enter email"
-                            label="Email"
+                            // label="Email"
                             fullWidth
                             InputProps={{
                                 startAdornment: (
@@ -68,10 +81,15 @@ const Login = () => {
                                         <Mail />
                                     </InputAdornment>
                                 ),
+                               
+                                classes: { notchedOutline: classes.noBorder },
                             }}
                         />
-
-                        <TentTextField
+                         <Typography variant="body1">
+                            Password
+                        </Typography>
+                        <TextField
+                            variant="outlined"
                             required
                             onChange={handleChange}
                             sx={{
@@ -81,9 +99,9 @@ const Login = () => {
 
                             }}
                             name="password"
-                            type="password"
+                            type={!visible ? "password" :"text"}
                             placeholder="enter password"
-                            label="Password"
+                            // label="Password"
                             fullWidth
                             InputProps={{
                                 startAdornment: (
@@ -91,6 +109,12 @@ const Login = () => {
                                         <Key />
                                     </InputAdornment>
                                 ),
+                                endAdornment:(
+                                    <IconButton onClick={() => toggleVisibility()}>
+                                      { visible ?  <EyeClosed /> : <EyeOpen/>}
+                                    </IconButton>
+                                ),
+                                classes: { notchedOutline: classes.noBorder },
                             }}
                         />
                     </form>

@@ -34,10 +34,10 @@ export interface UserDataType {
     verifyPhoneNumberOtpExpires?: string | null
     phoneNumberVerified?: boolean
     _id?: string
-    fullName: string
-    email: string
-    phoneNumber: string
-    tentUserId: string
+    fullName?: string
+    email?: string
+    phoneNumber?: string
+    tentUserId?: string
     verifyEmailOtp?: string | null
     verifyEmailOtpExpires?: string | null
     creator?: "user" | "admin",
@@ -161,6 +161,7 @@ export interface PaymentType {
     createdAt: string
     updatedAt: string
   }
+
 
 export interface BaseResponse<T> {
     data: T

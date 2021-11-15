@@ -22,11 +22,14 @@ export interface RegisterRequest {
 }
 
 
-interface BuildProjectRequest {
+export interface BuildProjectRequest {
   gender?: "male" | "female"
   dateOfBirth?: string
   profileImage?: string
   stateOfOrigin?: string
+  fullName?: string
+  email?: string
+  phoneNumber?: string
   maritalStatus?: "single" | "married"
   occupation?: string
   nextOfKin?: {
@@ -93,17 +96,18 @@ const extendedApi = emptySplitApi.injectEndpoints({
         body: body,
       })
     }),
-    buildProfile: builder.mutation<BaseResponse<string>, BuildProjectRequest>({
+    buildProfile: builder.mutation<BaseResponse<UserDataType>, BuildProjectRequest>({
       query: (body) => ({
         url: 'user/build-profile',
-        method: 'POST',
+        method: 'PATCH',
         body: body,
       })
     }),
     requestPhoneVerification: builder.mutation<BaseResponse<string>, string>({
-      query: () => ({
+      query: (body) => ({
         url: 'user/request-phone-verification',
         method: 'POST',
+        body: body
       })
     }),
     getMyProfile: builder.query<BaseResponse<UserDataType>,string>({
@@ -113,10 +117,11 @@ const extendedApi = emptySplitApi.injectEndpoints({
       })
     }),
 
-    editProfile: builder.mutation<BaseResponse<UserDataType>,UserDataType>({
-      query: () =>({
+    editProfile: builder.mutation<BaseResponse<UserDataType>,BuildProjectRequest>({
+      query: (body) =>({
         url: 'user/update-my-profile',
-        method: 'PATCH'
+        method: 'PATCH',
+        body: body
       })
     }),
     logoutCurrent: builder.mutation<BaseResponse<string>,string>({ 
@@ -153,6 +158,14 @@ const extendedApi = emptySplitApi.injectEndpoints({
         body: body,
       })
     }),
+
+    // uploadFile: builder.mutation<BaseResponse<string>,{file: string}>({
+    //   query: (body) => ({
+    //     url: 'utility/file-upload',
+    //     method: 'POST',
+    //     body: body,
+    //   })
+    // }),
     
     protected: builder.mutation<{ message: string }, void>({
       query: () => 'protected',

@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { UserDataType } from '../../lib'
+import { UserData, UserDataType } from '../../lib'
 import type { RootState } from '../../redux'
 
 type AuthState = {
@@ -18,10 +18,22 @@ const slice = createSlice({
       state.user = user
       state.token = token
     },
+    setProfilePicture: (
+      state,
+      {payload: {url}}: PayloadAction<{ url: string}>
+    ) =>{
+      state.user.profileImage = url
+    },
+    setProfile: (
+      state,
+      {payload}: PayloadAction<UserDataType>
+    ) =>{
+      state.user = payload
+    },
   },
 })
 
-export const { setCredentials } = slice.actions
+export const { setCredentials, setProfilePicture, setProfile } = slice.actions
 
 export default slice.reducer
 

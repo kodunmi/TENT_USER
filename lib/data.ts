@@ -7,13 +7,13 @@ export const UserData: AuthUserDataType = {
         residentialAddress: {
             address: "Gaduwa Estate",
             city: "Gudu",
-            state: "Abuja",
+            state: "abuja",
             zipCode: 6749003
         },
         businessAddress: {
             address: "Malad Plaza",
             city: "Wuse II",
-            state: "Abuja",
+            state: "abuja",
             zipCode: 6749007
         },
         nextOfKin: {
@@ -26,7 +26,7 @@ export const UserData: AuthUserDataType = {
         },
         ipAddress: "::1",
         accountVerified: true,
-        profileVerified: true,
+        profileVerified: false,
         emailVerified: true,
         phoneNumberVerified: true,
         _id: "6160c3c61a7e1f57089ec498",
@@ -50,3 +50,43 @@ export const UserData: AuthUserDataType = {
     }
 
 }
+
+export const statesOfNigeria = [
+    "Abia",
+    "Adamawa",
+    "Akwa Ibom",
+    "Anambra",
+    "Bauchi",
+    "Bayelsa",
+    "Benue",
+    "Borno",
+    "Cross River",
+    "Delta",
+    "Ebonyi",
+    "Edo",
+    "Ekiti",
+    "Enugu",
+    "FCT - Abuja",
+    "Gombe",
+    "Imo",
+    "Jigawa",
+    "Kaduna",
+    "Kano",
+    "Katsina",
+    "Kebbi",
+    "Kogi",
+    "Kwara",
+    "Lagos",
+    "Nasarawa",
+    "Niger",
+    "Ogun",
+    "Ondo",
+    "Osun",
+    "Oyo",
+    "Plateau",
+    "Rivers",
+    "Sokoto",
+    "Taraba",
+    "Yobe",
+    "Zamfara"
+  ]

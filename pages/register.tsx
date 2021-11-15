@@ -1,4 +1,4 @@
-import { Button, InputAdornment, Typography } from '@mui/material'
+import { Button, InputAdornment, TextField, Typography } from '@mui/material'
 import { Box } from '@mui/system'
 import React, { FormEvent } from 'react'
 import { TentTextField } from '../components'
@@ -76,9 +76,13 @@ const Register = () => {
                 </Typography>
                 <form onSubmit={(e)=>handleRegister(e)}>
                     <Box sx={{ height: {lg:`${height - 575}px`,sm:"100%"}, overflow: "scroll", mb: "10px" }}>
-                        <TentTextField
+                        <Typography variant="body1">
+                        Full Name
+                        </Typography>
+                        <TextField
                             onChange={handleChange}
                             required
+                            variant="outlined"
                             sx={{
                                 border: "none",
                                 backgroundColor: "action.hover",
@@ -88,7 +92,6 @@ const Register = () => {
                             name="fullName"
                             type="text"
                             placeholder="enter full name"
-                            label="Full Name"
                             fullWidth
                             InputProps={{
                                 startAdornment: (
@@ -98,9 +101,13 @@ const Register = () => {
                                 ),
                             }}
                         />
-                        <TentTextField
+                        <Typography variant="body1">
+                        Phone Number
+                        </Typography>
+                        <TextField
                             onChange={handleChange}
                             required
+                            variant="outlined"
                             sx={{
                                 border: "none",
                                 backgroundColor: "action.hover",
@@ -110,7 +117,6 @@ const Register = () => {
                             name="phoneNumber"
                             type="text"
                             placeholder="enter phone number"
-                            label="Phone Number"
                             fullWidth
                             inputProps={{
                                 pattern:"[0-9]{11}",
@@ -121,7 +127,11 @@ const Register = () => {
                                 ),
                             }}
                         />
-                        <TentTextField
+                         <Typography variant="body1">
+                            Email
+                        </Typography>
+                        <TextField
+                            variant="outlined"
                             onChange={handleChange}
                             required
                             sx={{
@@ -133,7 +143,6 @@ const Register = () => {
                             name="email"
                             type="email"
                             placeholder="enter email"
-                            label="Email"
                             fullWidth
                             InputProps={{
                                 startAdornment: (
@@ -143,9 +152,13 @@ const Register = () => {
                                 ),
                             }}
                         />
-                        <TentTextField
+                        <Typography variant="body1">
+                            Password
+                        </Typography>
+                        <TextField
                             onChange={handleChange}
                             required
+                            variant="outlined"
                             sx={{
                                 border: "none",
                                 backgroundColor: "action.hover",
@@ -155,7 +168,6 @@ const Register = () => {
                             name="password"
                             type="password"
                             placeholder="enter email"
-                            label="Password"
                             fullWidth
                             InputProps={{
                                 startAdornment: (
@@ -165,9 +177,13 @@ const Register = () => {
                                 ),
                             }}
                         />
-                        <TentTextField
+                        <Typography variant="body1">
+                            Confirm password
+                        </Typography>
+                        <TextField
                             onChange={(e)=>setRepassword(e.target.value)}
                             required
+                            variant="outlined"
                             sx={{
                                 border: "none",
                                 backgroundColor: "action.hover",
@@ -177,7 +193,6 @@ const Register = () => {
                             name="repassword"
                             type="password"
                             placeholder="Repeat password"
-                            label="Confirm password"
                             fullWidth
                             InputProps={{
                                 startAdornment: (

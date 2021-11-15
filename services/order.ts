@@ -8,9 +8,11 @@ interface getMyOrdersResponse {
     myOrders: Array<OrderType>
 }
 
+export interface getEstimateProps { estateId: string, landSize: number, paymentMethod: string, buildingTypeId?: string}
+
 const extendedApi = emptySplitApi.injectEndpoints({
     endpoints: (builder) => ({
-        getEstimate: builder.mutation<BaseResponse<OrderType>, { estateId: string, landSize: number, paymentMethod: paymentMethodEnums }>({
+        getEstimate: builder.mutation<BaseResponse<OrderType>, getEstimateProps>({
             query: (body) => ({
                 url: "order/estimate",
                 method: "POST",
