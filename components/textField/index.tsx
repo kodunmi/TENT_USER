@@ -20,10 +20,7 @@ export const TentTextField = (props:TextFieldProps) => {
       <TextField
         {...rest}
         
-        InputProps={{
-          "aria-label": "naked",
-          classes: { notchedOutline: classes.noBorder },
-        }}
+        
       />
     </Stack>
   );

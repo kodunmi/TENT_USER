@@ -8,6 +8,7 @@ import { OrderProps, OrderType } from "../../lib/type";
 import { useGetMyOrdersQuery } from "../../services/order";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PhoneIcon from '@mui/icons-material/PhoneCallback';
+import { WithAuth } from "../../HOC";
 
 const Orders = () => {
   const [open, setOpen] = useState(false);
@@ -332,4 +333,4 @@ const Orders = () => {
   );
 };
 
-export default Orders;
+export default WithAuth(Orders);

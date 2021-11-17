@@ -29,6 +29,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import moment from 'moment';
 import { confirmAlert } from 'react-confirm-alert'; // Import
 import ReactPhoneInput from 'react-phone-input-mui';
+import { WithAuth } from "../../HOC";
 
 const Profile = () => {
   const { user } = useAuth()
@@ -898,4 +899,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default WithAuth(Profile);

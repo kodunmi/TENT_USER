@@ -21,11 +21,14 @@ import Avatar from "@mui/material/Avatar";
 import Image from 'next/image';
 import { Search } from "@mui/icons-material";
 import { useAuth } from "../../hooks";
+import { useRouter } from "next/router";
+
 
 export function NavBar({onclick}) {
   const isDarkModeEnabled = useMediaQuery("(prefers-color-scheme: dark)");
   const theme = useTheme();
   const {user} = useAuth()
+  const router = useRouter()
 
   return (
     <Box>
@@ -45,6 +48,7 @@ export function NavBar({onclick}) {
               size="large"
               aria-label="show 17 new notifications"
               color="inherit"
+              onClick={()=> router.push('/notifications')}
             >
               <Badge
                 variant="dot"
@@ -58,11 +62,11 @@ export function NavBar({onclick}) {
               </Badge>
             </IconButton>
 
-            <Avatar src={user.profileImage} />
+            <Avatar src={user.profileImage} style={{ cursor: "pointer" }} onClick={()=> router.push('/profile')} />
           </Box>
 
           <Box pl={2} sx={{ display: { xs: "none", md: "block" } }}>
-            <Grid spacing={0} container>
+            <Grid spacing={0} style={{ cursor: "pointer" }} container onClick={()=> router.push('/profile')}>
               <Grid md={12} item>
                 <Typography
                   sx={{ lineHeight: "1" }}

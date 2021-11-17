@@ -39,6 +39,7 @@ import creditCardType, {
   types as CardType,
 } from "credit-card-type";
 import { PaymentType } from "../../lib";
+import { WithAuth } from "../../HOC";
 
 const SCard = withTheme(styled(Card)`
   border-radius: 9.35294px;
@@ -580,4 +581,4 @@ const Payments = () => {
   );
 };
 
-export default Payments;
+export default WithAuth(Payments);
