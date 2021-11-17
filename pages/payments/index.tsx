@@ -14,10 +14,11 @@ import {
   CardContent,
   CardActions,
   Backdrop,
+  MenuItem,
 } from "@mui/material";
 import { Box, display } from "@mui/system";
 import React from "react";
-import { ArrowRightButton, IconButton, TentTextField } from "../../components";
+import { ArrowRightButton, EmptyData, ErrorData, IconButton, TentSpinner, TentTextField } from "../../components";
 import { AppLayout } from "../../layout";
 import Search from "remixicon-react/SearchLineIcon";
 import { withTheme } from "@mui/styles";
@@ -29,6 +30,15 @@ import { SwiperSlide, Swiper } from "swiper/react";
 // Import Swiper styles
 import "swiper/css";
 import { styled as m } from "@mui/material/styles";
+import { CardProps, useAddCardMutation, useGetCardsQuery, useGetTransactionsQuery } from "../../services";
+import { useSnackbar } from "notistack";
+import Cards from 'react-credit-cards';
+import 'react-credit-cards/es/styles-compiled.css';
+import creditCardType, {
+  getTypeInfo,
+  types as CardType,
+} from "credit-card-type";
+import { PaymentType } from "../../lib";
 
 const SCard = withTheme(styled(Card)`
   border-radius: 9.35294px;
@@ -55,26 +65,26 @@ interface PaymentProps {
   type: "land" | "building";
 }
 
-const PaymentCard = (payment: PaymentProps) => (
+
+const PaymentCard = (payment: PaymentType) => (
   <SCard>
     <Grid container justifyContent="space-between" alignItems="center">
       <Stack spacing={4} direction="row">
         <IconButton>
-          {payment.type === "land" && <Pin />}
-          {payment.type === "building" && <Home />}
+          <Home />
         </IconButton>
         <Stack spacing={0}>
           <Typography mb={0} variant="h6">
-            {payment.title}
+            {payment.orderId}
           </Typography>
-          <Typography variant="caption">{payment.location}</Typography>
+          <Typography variant="caption">{payment.order.estateName}</Typography>
         </Stack>
       </Stack>
       <Stack spacing={0}>
         <Typography mb={0} variant="h6">
           {`NGN ${payment.amount}`}
         </Typography>
-        <Typography variant="body2">{payment.time}</Typography>
+        <Typography variant="body2">{payment.paymentDate}</Typography>
       </Stack>
     </Grid>
   </SCard>
@@ -202,9 +212,88 @@ const payments: Array<PaymentProps> = [
   },
 ];
 const Payments = () => {
+  const formRef = React.useRef<HTMLFormElement>(null);
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  const [addCard, { isLoading, error }] = useAddCardMutation();
+  const { enqueueSnackbar } = useSnackbar();
+  const [focus, setFocus] = React.useState('')
+  const { refetch, data, isLoading: loading, error: cardError } = useGetCardsQuery('', {
+    refetchOnMountOrArgChange: true,
+    refetchOnReconnect: true
+  })
+  const { data: transactionData, isLoading: loadingTrans, error: tracError } = useGetTransactionsQuery({ pageNumber: 1, order: '', sortBy: '' }, {
+    refetchOnMountOrArgChange: true,
+    refetchOnReconnect: true
+  })
+
+  const [formState, setFormState] = React.useState<{ cardHolder: string, cvv: string, cardNumber: string, cardDate: string }>({
+    cardHolder: '',
+    cardNumber: '',
+    cvv: '',
+    cardDate: '',
+  })
+
+  console.log(data)
+
+  const handleInputFocus = (e) => {
+    setFocus(e.target.name)
+  }
+  const handleChange = ({
+    target: { name, value },
+  }: React.ChangeEvent<HTMLInputElement>) => {
+
+    const split = name.split('.')
+    if (split.length > 1) {
+      setFormState((prev) => ({
+        ...prev, [split[0]]: {
+          ...prev[split[0]],
+          [split[1]]: value
+        }
+      }))
+    } else {
+      console.log(name, value);
+
+      setFormState((prev) => ({ ...prev, [name]: value }))
+    }
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    // console.log(formState);
+
+    const cardType = creditCardType(formState.cardNumber.slice(0, 4))[0].niceType
+    console.log(cardType);
+    if (formRef.current.reportValidity()) {
+      const formData: CardProps = {
+        cardHolder: formState.cardHolder,
+        cardNumber: formState.cardNumber,
+        cvv: formState.cvv,
+        expiry: {
+          month: formState.cardDate.split('/')[0],
+          year: formState.cardDate.split('/')[1]
+        },
+        cardType: cardType
+      }
+
+      console.log(formData);
+
+      try {
+        const { data } = await addCard(formData).unwrap()
+        console.log(data)
+          refetch()
+        enqueueSnackbar('card added successfully', {
+          variant: 'success'
+        })
+      } catch (err) {
+        enqueueSnackbar(err.data ? err.data.message : "We could not process your request", {
+          variant: 'warning'
+        });
+      }
+    }
+  }
+
   const AddCardModal = (
     <Modal
       aria-labelledby="transition-modal-title"
@@ -220,11 +309,13 @@ const Payments = () => {
       <Fade in={open}>
         <Card
           sx={{
-            position: "absolute" as "absolute",
+            position: "absolute",
+            maxHeight: "calc(100vh - 210px)",
+            overflowY: "auto",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width:{lg:"500px",xs:"90%",sm:"70%",md:"500px"} ,
+            width: { lg: "500px", xs: "90%", sm: "70%", md: "500px" },
             bgcolor: "background.paper",
             boxShadow: 24,
             borderRadius: "13px"
@@ -238,61 +329,86 @@ const Payments = () => {
             }}
             title="Add new card"
           />
-          <CardContent sx={{ px:{lg:"50px", md:"50px",sm:"30px",xs:"50px 10px"}  }}>
-            <Stack spacing={4}>
-              <TentTextField
-                name="card"
-                type="text"
-                placeholder="enter card number"
-                label="Card number"
-                sx={{
+          <CardContent sx={{ px: { lg: "50px", md: "50px", sm: "30px", xs: "50px 10px" } }}>
+            <Cards
+              cvc={formState.cvv}
+              expiry={formState.cardDate}
+              name={formState.cardHolder}
+              number={formState.cardNumber}
+              focus={focus}
+            />
+            <form ref={formRef}>
+              <Stack spacing={4} mt={6}>
+                <TentTextField
+                  onChange={handleChange}
+                  onFocus={handleInputFocus}
+                  required
+                  name="cardNumber"
+                  type="number"
+                  placeholder="enter card number"
+                  label="Card number"
+                  sx={{
                     border: "none",
                     backgroundColor: "action.hover",
                     borderRadius: "5px",
                   }}
-              />
-              <Stack direction="row" spacing={2}>
-                <Grid item lg={6} sm={6} md={6} xs={6}>
-                  <TentTextField
-                    name="date"
-                    type="date"
-                    placeholder="name"
-                    label="Expiry date"
-                    fullWidth
-                    sx={{
+                />
+                <Stack direction="row" spacing={2}>
+                  <Grid item lg={6} sm={6} md={6} xs={6}>
+                    <TentTextField
+                      onChange={handleChange}
+                      onFocus={handleInputFocus}
+                      required
+                      name="cardDate"
+                      type="text"
+                      placeholder="name"
+                      label="Expiry date"
+                      fullWidth
+
+                      sx={{
                         border: "none",
                         backgroundColor: "action.hover",
                         borderRadius: "5px",
                       }}
-                  />
-                </Grid>
-                <Grid item lg={6} sm={6} md={6} xs={6}>
-                  <TentTextField
-                    name="date"
-                    type="password"
-                    placeholder="CVV"
-                    label="CVV"
-                    fullWidth
-                    sx={{
+                    />
+                  </Grid>
+                  <Grid item lg={6} sm={6} md={6} xs={6}>
+                    <TentTextField
+                      onChange={handleChange}
+                      required
+                      name="cvv"
+                      type="text"
+                      placeholder="CVV"
+                      label="CVV"
+                      fullWidth
+                      onFocus={handleInputFocus}
+
+                      sx={{
                         border: "none",
                         backgroundColor: "action.hover",
                         borderRadius: "5px",
                       }}
-                  />
-                </Grid>
+                    />
+                  </Grid>
+                </Stack>
+                <TentTextField
+                  onChange={handleChange}
+                  onFocus={handleInputFocus}
+                  required
+                  name="cardHolder"
+                  type="text"
+                  placeholder="Enter full name"
+                  label="Card holder name"
+                  sx={{
+                    border: "none",
+                    backgroundColor: "action.hover",
+                    borderRadius: "5px",
+                  }}
+                />
+
               </Stack>
-              <TentTextField
-                name="card"
-                type="text"
-                placeholder="Enter full name"
-                label="Card holder name"
-                sx={{
-                    border: "none",
-                    backgroundColor: "action.hover",
-                    borderRadius: "5px",
-                  }}
-              />
-            </Stack>
+            </form>
+
           </CardContent>
           <CardActions
             sx={{
@@ -302,9 +418,9 @@ const Payments = () => {
               padding: "32px 50px",
             }}
           >
-            <Button  sx={{
-              padding:"15px 30px"
-            }} fullWidth variant="contained" color="neutral" endIcon={<ArrowRightButton />}>
+            <Button sx={{
+              padding: "15px 30px"
+            }} onClick={handleSubmit} fullWidth variant="contained" color="neutral" endIcon={<ArrowRightButton />}>
               Save & Continue
             </Button>
           </CardActions>
@@ -369,16 +485,18 @@ const Payments = () => {
                     }}
                     loop={true}
                   >
-                    <SwiperSlide>
-                      <div style={{ width: "100%" }}>
-                        <img
-                          src="/images/cards/image (3).png"
-                          alt=""
-                          width="100%"
+                    {loading ? <TentSpinner /> : cardError ? <ErrorData /> : data.data.cards.length < 1 ? <EmptyData /> : data.data.cards.map((card) =>
+                      <SwiperSlide>
+                        <Cards
+                          cvc={card.cvv}
+                          expiry={`${card.expiry.month}/${card.expiry.year}`}
+                          name={card.cardNumber}
+                          number={card.cardNumber}
                         />
-                      </div>
-                    </SwiperSlide>
-                    <SwiperSlide>
+                      </SwiperSlide>
+                    )}
+
+                    {/* <SwiperSlide>
                       <div style={{ width: "100%" }}>
                         <img
                           src="/images/cards/image.png"
@@ -386,7 +504,7 @@ const Payments = () => {
                           width="100%"
                         />
                       </div>
-                    </SwiperSlide>
+                    </SwiperSlide> */}
                   </Swiper>
                 </Box>
               </Box>
@@ -396,7 +514,7 @@ const Payments = () => {
                 <Typography mb={6} variant="body1">
                   TRANSACTION HISTORY
                 </Typography>
-                {payments.map((payment) => PaymentCard(payment))}
+                {loadingTrans ? <TentSpinner /> : tracError ? <ErrorData /> : transactionData.data.paymentCount < 1 ? <EmptyData /> : transactionData.data.payments.map((payment) => PaymentCard(payment))}
               </Box>
             </Grid>
           </Stack>

@@ -28,6 +28,7 @@ import {
 import { Activation, DrawerFooter } from '.';
 import { DrawerProps } from '../lib/type';
 import { useAuth } from '../hooks';
+import { useGetMyOrdersQuery } from '../services';
 
 
   const StyledNavLink = styled(props => <NavLink {...props}/>)`
@@ -88,6 +89,10 @@ import { useAuth } from '../hooks';
 
 export const SideDrawer = ({handleOpenDrawer, handleCloseDrawer, openDrawer}:DrawerProps )=> {
     const {user} = useAuth()
+    const {refetch, data, isLoading , error} = useGetMyOrdersQuery({pageNumber:1, sortBy:'createdAt', order:'desc'},{
+      refetchOnMountOrArgChange: true,
+      skip: false,
+    })
     const list = () => (
         <Box
             component="div"
@@ -126,7 +131,7 @@ export const SideDrawer = ({handleOpenDrawer, handleCloseDrawer, openDrawer}:Dra
                   alignItems="flex-end"
                   button
                   key={menu.route}
-                  secondaryAction={menu.countable ? <MenuCount>{ menu.route === "/notifications" ? 12 : menu.route == "/orders" ? 12 : 6} </MenuCount> : menu.route === "/profile" ? user.profileVerified ? <Activation background="green">ACTIVATED</Activation>:<Activation background="red">UNACTIVATED</Activation> : ""}
+                  secondaryAction={menu.countable ? <MenuCount>{ menu.route === "/notifications" ? 12 : menu.route == "/orders" ? !isLoading && data.data.myOrderCount : 6} </MenuCount> : menu.route === "/profile" ? user.profileVerified ? <Activation background="green">ACTIVATED</Activation>:<Activation background="red">UNACTIVATED</Activation> : ""}
                 >
                   <ListItemIcon>
                     <menu.icon color="#EACA1F" />

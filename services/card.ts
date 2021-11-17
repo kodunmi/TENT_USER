@@ -1,14 +1,14 @@
 import { BaseResponse, CardType } from './../lib/type';
 import { emptySplitApi } from './base';
 
-interface CardProps{
+export interface CardProps{
     cardHolder: string
-    cardNumber: number
+    cardNumber: string
     expiry: {
-        month: number
-        year: number
+        month: string
+        year: string
     },
-    cvv: number
+    cvv: string
     cardType: string
 }
 
@@ -18,17 +18,14 @@ const extendedApi = emptySplitApi.injectEndpoints({
     endpoints: (builder) => ({
         addCard: builder.mutation<BaseResponse<Array<CardType>>, CardProps>({
             query: (card) => ({
-                url: "add-card",
+                url: "user/add-card",
                 method: "POST",
                 body: card,
             })
         }),
 
-        getCards: builder.query<BaseResponse<Array<CardType>>, string>({
-            query: () => ({
-                url: "my-cards",
-                method: "GET",
-            })
+        getCards: builder.query<BaseResponse<{cards:Array<CardType>,totalSpent:number}>, string>({
+            query: () => "user/my-cards"
         }),
 
         removeCard: builder.mutation<BaseResponse<Array<CardType>>, string>({

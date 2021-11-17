@@ -102,15 +102,24 @@ export interface FacilityType {
 }
 
 export interface OrderType {
-    addedBuilding: boolean
-    discount: number
-    status: orderStatusEnums
-    paymentCompleted: boolean
-    instalmentPaymentStarted: boolean
+    addedBuilding?: boolean
+    discount?: number
+    status: "processing"|"complete"|"terminate"
+    paymentCompleted?: boolean
+    instalmentPaymentStarted?: boolean
     _id: string
-    estateId: string
+    estateId: {
+        estateLocation: {
+            address: string
+            city: string
+            state: string
+            zipCode: number
+        },
+        _id: string
+        estateName: string
+    },
     landSize: number
-    paymentMethod: paymentMethodEnums,
+    paymentMethod: "instalmentPayment" | 'fullPayment',
     user: string
     estateName: string
     landEstimatedPrice: number
@@ -119,13 +128,13 @@ export interface OrderType {
         numberOfRoom: number
         buildingEstimatedPrice: number
     },
-    orderId: number
+    orderId: string
     createdAt: string
     updatedAt: string
-    infrastructureFee: number
-    legalFee: number
-    surveyFee: number
-    engineeringSupervisionFee: number
+    infrastructureFee?: number
+    legalFee?: number
+    surveyFee?: number
+    engineeringSupervisionFee?: number
     totalEstimatedPrice: number
 }
 
@@ -145,7 +154,7 @@ export interface PaymentType {
       estateId: string
       estateName: string
       orderId: string
-    } | string,
+    },
     payerName?: string
     payerEmail?: string
     payerPhoneNumber?: string

@@ -100,7 +100,7 @@ const IPhoneContainer = styled.div`
   margin-top: -45px;
   @media (max-width: 1100px) {
     margin-left: -100px;
-  } ;
+  } 
 `;
 
 
@@ -116,14 +116,22 @@ export default function HomePage() {
   const [building, setBuilding] = useState<Array<BuildingType>>([])
   const [formState, setFormState] = useState<getEstimateProps>()
   const [openPaymentTypeModal, setOpenPaymentTypeModal] = useState(false)
-  const { data, error, isLoading } = useGetFacilitiesQuery('', {
+  const { refetch,data, error, isLoading } = useGetFacilitiesQuery('', {
     refetchOnMountOrArgChange: true,
     skip: false,
   })
 
+  useEffect(() => {
+    if(open) {
+      refetch()
+    }
+  },[open])
+  
+
   const { data: cardData, error: cardDataError, isLoading: isLoadingCardData } = useGetCardFacilitiesQuery('', {
     refetchOnMountOrArgChange: true,
     skip: false,
+    refetchOnReconnect: true,
   })
   const  [getEstimate,{ isLoading : gettingEstimate }] = useGetEstimateMutation()
 

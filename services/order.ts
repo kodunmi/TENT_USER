@@ -21,10 +21,7 @@ const extendedApi = emptySplitApi.injectEndpoints({
         }),
 
         getMyOrders: builder.query<BaseResponse<getMyOrdersResponse>, { filterByStatus?: orderStatusEnums, pageNumber?: number, sortBy?: string, order?: string }>({
-            query: (body) => ({
-                url: `/order/my-orders?filterByStatus=${body.filterByStatus}&pageNumber=${body.pageNumber}&sortBy=${body.sortBy}&order=${body.order}`,
-                method: "GET",
-            })
+            query: (body) =>  `/order/my-orders?filterByStatus=${body.filterByStatus}&pageNumber=${body.pageNumber}&sortBy=${body.sortBy}&order=${body.order}`
         }),
 
         getMyOrderById: builder.query<BaseResponse<OrderType>,string>({

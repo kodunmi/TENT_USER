@@ -78,8 +78,8 @@ export const AtmCard = (props:CardFactoryType) => {
             <div style={{
                 position: "absolute",
                 top: "50%",
-                left: "4%",
-                width: "90%"
+                left: "10%",
+                width: "80%"
 
             }} >
                 {LinearProgressWithLabel({ value: props.percentageLandSold })}

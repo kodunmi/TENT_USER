@@ -39,10 +39,7 @@ const extendedApi = emptySplitApi.injectEndpoints({
         }),
 
         getTransactions: builder.query<BaseResponse<getMyTransactionsResponse>, { pageNumber?: number, sortBy?: string, order?: string }>({
-            query: (body) => ({
-                url: `payment/my-payments?pageNumber=${body.pageNumber}&order=${body.order}&sortBy=${body.sortBy}`,
-                method: "GET",
-            })
+            query: (body) => `payment/my-payments?pageNumber=${body.pageNumber}&order=${body.order}&sortBy=${body.sortBy}`
         }),
 
         getTransactionById: builder.query<BaseResponse<PaymentType>, string>({
@@ -54,4 +51,4 @@ const extendedApi = emptySplitApi.injectEndpoints({
     })
 })
 
-export const {useGetTransactionsQuery,useMakePaymentMutation,useVerifyTransactionQuery} = extendedApi
+export const {useGetTransactionsQuery,useMakePaymentMutation,useVerifyTransactionQuery, useGetTransactionByIdQuery} = extendedApi

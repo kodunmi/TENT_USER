@@ -2,7 +2,7 @@ import { Card,Grid, Stack, Typography,Theme, Button } from "@mui/material";
 import React from "react";
 import { withTheme } from "@mui/styles";
 import styled from "styled-components";
-import { OrderProps } from "../../lib/type";
+import { OrderProps,OrderType } from "../../lib/type";
 import Pin from 'remixicon-react/MapPinLineIcon'
 import Home from 'remixicon-react/Home2LineIcon'
 
@@ -40,8 +40,8 @@ color: #fff;
 `
 
 interface CardOrderProps  {
-  order: OrderProps,
-  handleModalOpen: (order: OrderProps) => void
+  order: OrderType,
+  handleModalOpen: (order: OrderType) => void
 }
 
 
@@ -53,31 +53,27 @@ export const OrderCard = ({order,handleModalOpen}: CardOrderProps) => {
         <Stack spacing={4} direction="row">
             <IconButton>
               {
-                order.type === "land" &&  <Pin/>
+                order.addedBuilding ?  <Home/> :  <Pin/>
               }
-              {
-                order.type === "building" &&  <Home/>
-              }
-               
             </IconButton>
             <Stack spacing={0}>
                 <Typography mb={0} variant="h6">
-                    {order.title}
+                    {order.landSize} sqm
                 </Typography>
                 <Typography variant="caption">
-                    {order.location}
+                    {order.estateId.estateLocation.address}
                 </Typography>
             </Stack>
 
         </Stack>
         {
-          order.status === "FAILED" && <Status background="red" >FAILED</Status>
+          order.status == "terminate" && <Status background="red" >FAILED</Status>
         }
         {
-          order.status === "SUCCESSFUL" && <Status background="#04C300" >SUCCESSFUL</Status>
+          order.status === "complete" && <Status background="#04C300" >SUCCESSFUL</Status>
         }
         {
-          order.status === "PROCESSING" && <Status background="#00A3FF">PROCESSING</Status>
+          order.status === "processing" && <Status background="#00A3FF">PROCESSING</Status>
         }        
       </Grid>
     </SCard>

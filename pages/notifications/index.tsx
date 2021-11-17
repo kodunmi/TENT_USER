@@ -126,4 +126,4 @@ const Notifications = () => {
   );
 };
 
-export default WithAuth(Notifications) ;
+export default Notifications;
