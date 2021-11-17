@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import type { User } from '../../services'
 import type { RootState } from '../../redux'
 import { NotificationType } from '../../pages/notifications'
 
