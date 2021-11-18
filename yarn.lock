@@ -3725,6 +3725,11 @@ react-pin-field@^2.0.0-beta.2:
   resolved "https://registry.yarnpkg.com/react-pin-field/-/react-pin-field-2.0.0-beta.2.tgz#04a087a0db4e1460f1ef6ebcb21428f20dcd5ca4"
   integrity sha512-nqqZPR6beTeNG5WtieCvmxDXqYbIOEhAn//oTcfIw7+yUfO4OrWh+7COmkUCyknSZdxbQ2kxq+xwMaOa1ot66A==
 
+react-pin-input@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/react-pin-input/-/react-pin-input-1.0.1.tgz#be3958d43dcafb493b4ac484d078a86cf372466a"
+  integrity sha512-nppjO8ft5EJspJ9O57TMf2nMG0rBadASVSqQhFEjGio7uSrAWfwu35ZacXl4R7iGT0OKGh3rv1d5s+MWnBAzLw==
+
 react-redux@^7.2.6:
   version "7.2.6"
   resolved "https://registry.yarnpkg.com/react-redux/-/react-redux-7.2.6.tgz#49633a24fe552b5f9caf58feb8a138936ddfe9aa"

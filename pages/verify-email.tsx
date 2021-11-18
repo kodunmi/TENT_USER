@@ -10,13 +10,14 @@ import { useRouter } from 'next/router'
 import { useSnackbar } from 'notistack'
 import { LoadingButton } from '@mui/lab'
 import { setCredentials } from '../redux'
-import {AuthUserDataType} from '../lib'
+import { AuthUserDataType } from '../lib'
 import { useAppDispatch } from '../hooks'
+import PinInput from 'react-pin-input';
 
-const ReactPinField = React.lazy(() => import("react-pin-field"));
+// const ReactPinField = React.lazy(() => import("react-pin-field"));
 
 
-const Input = styled(ReactPinField)`
+const Input = styled(PinInput)`
     border: 1px solid rgb(204, 204, 204);
     background: #FAFAFA;
   border-radius: 0.3rem;
@@ -29,12 +30,12 @@ const Input = styled(ReactPinField)`
   transition-property: background, color, border, box-shadow, transform;
   width: 16.666666%;
 
-  :focus {
+  .pincode-input-text:focus {
   border-color:  #EACA1F;
   outline: none;
   transform: scale(1.05);
 
-  :invalid {
+  .pincode-input-text:invalid {
   animation: shake 3 linear 75ms;
   border-color: rgb(220, 53, 69);
   box-shadow: 0 0 0.25rem rgba(220, 53, 69, 0.5);
@@ -52,7 +53,7 @@ const Input = styled(ReactPinField)`
 `
 
 const VerifyEmail = () => {
-   
+
     const [pinComplete, setPinComplete] = useState(false)
     const [pin, setPin] = useState('')
     const [verify, { isLoading }] = useVerifyMailMutation()
@@ -61,13 +62,13 @@ const VerifyEmail = () => {
     const { email } = router.query
     const { enqueueSnackbar } = useSnackbar();
     const dispatch = useAppDispatch()
-    const {push} = router
+    const { push } = router
     useEffect(() => {
         if (pin.length < 6) {
             setPinComplete(val => false)
         }
 
-        console.log(pin);
+        console.log(pin,email);
 
     }, [pin])
 
@@ -119,12 +120,26 @@ const VerifyEmail = () => {
                         Please enter the verification code we sent to your email: tactical@tentgroup.com
                     </Typography>
 
-                    <Input
+                    {/* <Input
                         type="password"
                         length={6}
                         validate={/^[0-9]$/}
                         onComplete={() => setPinComplete(true)}
                         onChange={(e) => setPin(e)}
+                    /> */}
+
+                    <PinInput
+                        length={6}
+                        initialValue=""
+                        type="numeric"
+                        inputMode="number"
+                        style={{ padding: '10px' }}
+                        inputStyle={{ borderColor: '#EACA1F' }}
+                        inputFocusStyle={{ borderColor: 'blue' }}
+                        onComplete={() => setPinComplete(true)}
+                        onChange={(e) => setPin(e)}
+                        autoSelect={true}
+                       
                     />
 
 

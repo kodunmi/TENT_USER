@@ -8,6 +8,8 @@ import { useAppDispatch, useWindowDimensions } from '../hooks'
 import Link from 'next/link'
 import { RegisterRequest, useRegisterMutation } from '../services'
 import { useSnackbar } from 'notistack'
+import { useRouter } from 'next/router'
+
 
 
 const Register = () => {
@@ -19,6 +21,8 @@ const Register = () => {
         fullName: '',
         phoneNumber: '',
     })
+
+    const router = useRouter()
 
     const [repassword, setRepassword] = React.useState("")
 
@@ -56,6 +60,8 @@ const Register = () => {
         try {
             const user = await register(formState).unwrap()
             
+            router.push(`verify-email?email=${formState.email}`)
+
               console.log(user);
           
           } catch (err) {
