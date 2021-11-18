@@ -35,6 +35,6 @@ export function IPhone(props) {
   export const ArrowRightButton = (props) => (
     <svg width="20" height="20" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path d="M19.6687 39.3374C30.5314 39.3374 39.3374 30.5314 39.3374 19.6687C39.3374 8.80598 30.5314 0 19.6687 0C8.80598 0 0 8.80598 0 19.6687C0 30.5314 8.80598 39.3374 19.6687 39.3374Z" fill="#EACA1F"/>
-  <path d="M20.9101 26.6227L27.864 19.6688M27.864 19.6688L20.9101 12.7148M27.864 19.6688H11.4734" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M20.9101 26.6227L27.864 19.6688M27.864 19.6688L20.9101 12.7148M27.864 19.6688H11.4734" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
   )

@@ -78,7 +78,7 @@ const Notifications = () => {
             <Grid display={{sm:(active ? "none" : "block"),xs:(active ? "none" : "block"),md:"block",lg:"block"}} md={5} sm={12} xs={12} lg={5} item>
                 <Box sx={{ height: "calc(100vh - 100px)", overflow: "scroll"}}>
                    {
-                    nots.map((not:NotificationType)=><NotificationCard {...not}/>)
+                    nots.map((not:NotificationType)=><NotificationCard key={`a-${not.title}`} {...not}/>)
                 } 
                 </Box>
                 

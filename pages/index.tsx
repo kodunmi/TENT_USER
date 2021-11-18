@@ -330,7 +330,7 @@ export default function HomePage() {
                       }}
                     >
                       {
-                        data.data.map(fac => <MenuItem value={fac._id} >{fac.estateName}</MenuItem>)
+                        data.data.map(fac => <MenuItem key={`e-${fac._id}`} value={fac._id} >{fac.estateName}</MenuItem>)
                       }
                     </TextField>
                     <Stack direction="row" spacing={2}>
@@ -376,7 +376,7 @@ export default function HomePage() {
                           }}
                         >
                           {
-                            building.map(building => <MenuItem value={building._id} >{building.buildingType}</MenuItem>)
+                            building.map(building => <MenuItem key={`c-${building._id}`} value={building._id} >{building.buildingType}</MenuItem>)
                           }
                         </TextField>
                       </Grid>
@@ -544,7 +544,7 @@ export default function HomePage() {
           {
             isLoadingCardData ? <TentSpinner /> : cardDataError ? 'error' : (
               cardData.data.map((data) =>{
-                return <SwiperSlide>
+                return <SwiperSlide key={`index-slide-${data._id}`}>
                 <AtmCard {...data}/>
                </SwiperSlide>
               })

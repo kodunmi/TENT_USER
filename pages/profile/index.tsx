@@ -610,7 +610,7 @@ const Profile = () => {
                         <em>Select state</em>
                       </MenuItem>
                       {
-                        statesOfNigeria.map(state => <MenuItem value={state}>{state}</MenuItem>)
+                        statesOfNigeria.map(state => <MenuItem key={`b-${state}`} value={state}>{state}</MenuItem>)
                       }
 
                     </TentTextField>{" "}
@@ -668,7 +668,7 @@ const Profile = () => {
                         <em>Select state</em>
                       </MenuItem>
                       {
-                        statesOfNigeria.map(state => <MenuItem value={state}>{state}</MenuItem>)
+                        statesOfNigeria.map(state => <MenuItem key={`b-${state}`} value={state}>{state}</MenuItem>)
                       }
 
                     </TentTextField>{" "}
@@ -777,7 +777,7 @@ const Profile = () => {
                           <em>Select state</em>
                         </MenuItem>
                         {
-                          statesOfNigeria.map(state => <MenuItem value={state}>{state}</MenuItem>)
+                          statesOfNigeria.map(state => <MenuItem key={`b-${state}`} value={state}>{state}</MenuItem>)
                         }
 
                       </TentTextField>{" "}
@@ -852,7 +852,7 @@ const Profile = () => {
                             <em>Select state</em>
                           </MenuItem>
                           {
-                            statesOfNigeria.map(state => <MenuItem value={state}>{state}</MenuItem>)
+                            statesOfNigeria.map(state => <MenuItem key={`b-${state}`} value={state}>{state}</MenuItem>)
                           }
 
                         </TentTextField>{" "}

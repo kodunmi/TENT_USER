@@ -3,8 +3,7 @@ import { Box } from '@mui/system'
 import React, { useEffect, useState } from 'react'
 import { AuthLayout } from '../layout'
 import Link from 'next/link'
-import { TentTextField } from '../components'
-import ReactPinField from "react-pin-field"
+// import ReactPinField from "react-pin-field"
 import styled from 'styled-components'
 import { useResendVerificationMailMutation, useVerifyMailMutation } from '../services'
 import { useRouter } from 'next/router'
@@ -13,6 +12,9 @@ import { LoadingButton } from '@mui/lab'
 import { setCredentials } from '../redux'
 import {AuthUserDataType} from '../lib'
 import { useAppDispatch } from '../hooks'
+
+const ReactPinField = React.lazy(() => import("react-pin-field"));
+
 
 const Input = styled(ReactPinField)`
     border: 1px solid rgb(204, 204, 204);
@@ -50,6 +52,7 @@ const Input = styled(ReactPinField)`
 `
 
 const VerifyEmail = () => {
+   
     const [pinComplete, setPinComplete] = useState(false)
     const [pin, setPin] = useState('')
     const [verify, { isLoading }] = useVerifyMailMutation()

@@ -68,7 +68,7 @@ interface PaymentProps {
 
 
 const PaymentCard = (payment: PaymentType) => (
-  <SCard>
+  <SCard key={`payment-${payment._id}`}>
     <Grid container justifyContent="space-between" alignItems="center">
       <Stack spacing={4} direction="row">
         <IconButton>
@@ -487,7 +487,7 @@ const Payments = () => {
                     loop={true}
                   >
                     {loading ? <TentSpinner /> : cardError ? <ErrorData /> : data.data.cards.length < 1 ? <EmptyData /> : data.data.cards.map((card) =>
-                      <SwiperSlide>
+                      <SwiperSlide key={`index-card-${card._id}`}>
                         <Cards
                           cvc={card.cvv}
                           expiry={`${card.expiry.month}/${card.expiry.year}`}
