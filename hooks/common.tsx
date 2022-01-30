@@ -5,14 +5,14 @@ import { useAuth } from '.';
 function getWindowDimensions() {
   if (typeof window !== "undefined") {
     const { innerWidth: width, innerHeight: height } = window;
-  return {
-    width,
-    height
-  };
+    return {
+      width,
+      height
+    };
   }
 
   return null
-  
+
 }
 
 export function useWindowDimensions() {
@@ -28,6 +28,6 @@ export function useWindowDimensions() {
   }, []);
 
   return {
-   windowDimensions
+    windowDimensions
   };
 }

@@ -13,7 +13,7 @@ import { useRouter } from 'next/router'
 
 
 const Register = () => {
-    const { windowDimensions: { height, width } } = useWindowDimensions()
+    // const { windowDimensions: { height, width } } = useWindowDimensions()
     const { enqueueSnackbar } = useSnackbar();
     const [formState, setFormState] = React.useState<RegisterRequest>({
         email: '',
@@ -81,7 +81,7 @@ const Register = () => {
                     Create your account
                 </Typography>
                 <form onSubmit={(e)=>handleRegister(e)}>
-                    <Box sx={{ height: {lg:`${height - 575}px`,sm:"100%"}, overflow: "scroll", mb: "10px" }}>
+                    <Box sx={{ height: {lg:`30%`,sm:"100%"}, overflow: "scroll", mb: "10px" }}>
                         <Typography variant="body1">
                         Full Name
                         </Typography>

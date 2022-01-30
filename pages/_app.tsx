@@ -1,16 +1,26 @@
 import '../styles/main.scss'
 import { AppProps } from 'next/app'
-import useMediaQuery from '@mui/material/useMediaQuery';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { useMemo } from 'react';
 import { Provider } from 'react-redux'
 import { store } from '../redux';
 import { SnackbarProvider } from 'notistack';
 import { PersistGate } from 'redux-persist/integration/react'
 import { persistStore } from 'redux-persist'
 import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
+import theme from '../src/theme';
+import createEmotionCache from '../src/createEmotionCache';
+import { CacheProvider, EmotionCache } from '@emotion/react';
+
 // import 'react-phone-input-2/dist/style.css'
+
+// Client-side cache, shared for the whole session of the user in the browser.
+const clientSideEmotionCache = createEmotionCache();
+
+interface MyAppProps extends AppProps {
+  emotionCache?: EmotionCache;
+}
+
 
 declare module '@mui/material/styles' {
   interface Palette {
@@ -30,29 +40,17 @@ declare module '@mui/material/Button' {
   }
 }
 
-export default function App({ Component, pageProps }: AppProps) {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+export default function App(props: MyAppProps) {
 
+  const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
 
-  const theme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode: prefersDarkMode ? 'dark' : 'light',
-          neutral: {
-            main: prefersDarkMode? '#EACA1F' : '#161616',
-            contrastText: prefersDarkMode? '#161616' : '#EACA1F',
-          },
-        },
-      }),
-    [prefersDarkMode],
-  );
-  
   let persistor = persistStore(store);
 
   return (
+<CacheProvider value={emotionCache}>
     <SnackbarProvider maxSnack={3}>
-      <Provider store={store}>
+       
+          <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
       <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -60,8 +58,10 @@ export default function App({ Component, pageProps }: AppProps) {
      </ThemeProvider>
      </PersistGate>
     </Provider>
+      
+     
     </SnackbarProvider>
-    
+     </CacheProvider>
     
   )
   
