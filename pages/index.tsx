@@ -1,21 +1,26 @@
 import { AppLayout } from "../layout";
 import styled from "styled-components";
 import { ArrowRightButton, AtmCard, IconButton, IPhone, TentCard, TentSpinner, TentTextField } from "../components";
-import { Backdrop, Button, Card, CardActions, CardContent, CardHeader, Fade, FormControl, FormControlLabel, Grid, InputAdornment, MenuItem, Modal, Radio, RadioGroup, Stack, TextField, Typography } from "@mui/material";
+import { Backdrop, Button, Card, CardActions, CardContent, CardHeader, Fade, FormControl, FormControlLabel, Grid, InputAdornment, List, ListItem, ListItemText, MenuItem, Modal, Radio, RadioGroup, Stack, TextField, Typography } from "@mui/material";
 import { withTheme } from "@mui/styles";
 import ArrowRight from "remixicon-react/ArrowRightLineIcon";
 import HomeIcon from "remixicon-react/Home5LineIcon";
 import Pin from "remixicon-react/MapPinLineIcon";
 import SizeIcon from "remixicon-react/ShapeLineIcon";
-import { Box, Theme } from "@mui/system";
+import { Box, maxHeight, Theme } from "@mui/system";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import React, { useEffect, useRef, useState } from "react";
-import { useGetCardFacilitiesQuery, useGetFacilitiesQuery } from "../services";
-import { BuildingType, paymentMethodEnums } from "../lib";
+import { useGetCardFacilitiesQuery, useGetFacilitiesQuery, useMakePaymentMutation } from "../services";
+import { BuildingType, FrontendUrl, OrderType, paymentMethodEnums } from "../lib";
 import { getEstimateProps, useGetEstimateMutation } from "../services/order";
 import { useSnackbar } from "notistack";
 import { LoadingButton } from "@mui/lab";
+import PhoneIcon from '@mui/icons-material/PhoneCallbackTwoTone';
+import Home from 'remixicon-react/Home5LineIcon'
+import NumberFormat from "react-number-format";
+import moment from "moment";
+
 
 const Bg = styled.div`
   width: 100%;
@@ -25,6 +30,13 @@ const Bg = styled.div`
     height: 200px;
   }
 `;
+
+const InvoiceItem = styled.div`
+ box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+ border-radius: 6px;
+ width: 100%;
+ padding: 20px;
+  `
 
 const MainImage = withTheme(styled.div`
   max-width: 100%;
@@ -116,24 +128,28 @@ export default function HomePage() {
   const [building, setBuilding] = useState<Array<BuildingType>>([])
   const [formState, setFormState] = useState<getEstimateProps>()
   const [openPaymentTypeModal, setOpenPaymentTypeModal] = useState(false)
-  const { refetch,data, error, isLoading } = useGetFacilitiesQuery('', {
+  const [openInvoiceModal, setOpenInvoiceModal] = useState(false)
+  const [orderInModal, setOrderInModal] = useState<OrderType | undefined>();
+  const { refetch, data, error, isLoading } = useGetFacilitiesQuery('', {
     refetchOnMountOrArgChange: true,
     skip: false,
   })
 
   useEffect(() => {
-    if(open) {
+    if (open) {
       refetch()
     }
-  },[open])
-  
+  }, [open])
+
 
   const { data: cardData, error: cardDataError, isLoading: isLoadingCardData } = useGetCardFacilitiesQuery('', {
     refetchOnMountOrArgChange: true,
     skip: false,
     refetchOnReconnect: true,
   })
-  const  [getEstimate,{ isLoading : gettingEstimate }] = useGetEstimateMutation()
+  const [getEstimate, { isLoading: gettingEstimate }] = useGetEstimateMutation()
+
+  const [ makePayment , { isLoading: makingPayment }] = useMakePaymentMutation()
 
   const handleEstateChange = ({
     target: { name, value },
@@ -156,27 +172,42 @@ export default function HomePage() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    
-      setOpenPaymentTypeModal(true)
-    
+
+    setOpenPaymentTypeModal(true)
+
   }
 
   const handleGetEstimate = async () => {
 
     try {
-      const resp  = await getEstimate(formState).unwrap()
+      const resp = await getEstimate(formState).unwrap()
       console.log(resp);
-      
+      setOrderInModal(resp.data)
+      setOpenInvoiceModal(true)
+      enqueueSnackbar('Order placed successfully', { variant: 'success' })
+
     } catch (err) {
       enqueueSnackbar(err.data ? err.data.message : "We could not process your request", {
         variant: 'warning'
-    });
+      });
     }
     console.log(formState);
-    
+
   }
 
-  const RadioLabel = ({primary, secondary}:{primary:string, secondary:string}) => {
+  const handlePayment = async () => {
+    try {
+      const res = await makePayment({orderId: orderInModal._id, redirectLink: `${FrontendUrl}payments`}).unwrap()
+
+      window.location.href = res.data.data.link
+
+    } catch (err) {
+      enqueueSnackbar(err.data ? err.data.message : "We could not process your request", {
+        variant: 'warning'
+      });
+    }
+  }
+  const RadioLabel = ({ primary, secondary }: { primary: string, secondary: string }) => {
     return <Stack>
       <Typography variant="h5">
         {primary}
@@ -189,14 +220,248 @@ export default function HomePage() {
 
 
   const PaymentOptionModalTitle = (
-     <Stack>
-      <Typography textAlign="center"  variant="h4">
+    <Stack>
+      <Typography textAlign="center" variant="h4">
         Payment Option
       </Typography>
       <Typography textAlign="center" variant="body1">
         Choose a payment plan you are comfortable with.
       </Typography>
     </Stack>
+  )
+
+  const InvoiceModal = (
+    <Modal
+      aria-labelledby="transition-modal-title"
+      aria-describedby="transition-modal-description"
+      open={openInvoiceModal}
+      // onClose={() => setOpenInvoiceModal(false)}
+      closeAfterTransition
+      BackdropComponent={Backdrop}
+      disableEnforceFocus={true}
+      disableAutoFocus={true}
+      BackdropProps={{
+        timeout: 500,
+      }}
+      disableEscapeKeyDown={true}
+    >
+      <Fade in={openInvoiceModal}>
+        {
+          orderInModal && (
+            <Card
+              sx={{
+                position: "absolute" as "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: { lg: "500px", xs: "90%", sm: "70%", md: "500px" },
+                bgcolor: "background.secondary",
+                boxShadow: 24,
+                borderRadius: "5px",
+                maxHeight: "80%",
+                overflowY: "auto",
+              }}
+            >
+              <CardHeader
+                sx={{
+                  backgroundColor: "#EACA1F",
+                  padding: "20px 0px 20px 20px",
+                  textAlign: "left",
+                }}
+                title='Invoice Estimate'
+              />
+
+
+              <CardContent sx={{ px: "10px" }}>
+                <InvoiceItem>
+                  <div style={{ display: 'flex' }}>
+                    <div style={{ marginRight: "15px", marginTop: "10px" }}>
+
+                      {
+                        orderInModal.addedBuilding ? <Home color="#EACA1F" /> : <Pin color="#EACA1F" />
+                      }
+
+                    </div>
+
+                    <div>
+                      <h3 style={{ marginTop: "0px", marginBottom: "0px" }}>1,200sqm of Land</h3>
+                      <p style={{ marginTop: "0px", fontSize: "16.087px", color: '#788190' }}>Diplomatic Hill Est. Bwari - Kaduna Ex...</p>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: "space-between", marginLeft: "40px" }}>
+                    <p>
+                      <NumberFormat
+                        value={Math.trunc(orderInModal.totalEstimatedPrice)}
+                        displayType="text"
+                        thousandSeparator={true}
+                        prefix="NGN "
+                      />
+                    </p>
+                    <p>{moment(orderInModal.createdAt).format('Do MMM YYYY')}</p>
+                  </div>
+                </InvoiceItem>
+                <List sx={{
+                  bgcolor: "action.hover",
+                  borderRadius: "10px",
+                  padding: "30px 20px 20px",
+                  mt: "20px",
+                  mb: "20px",
+                }}>
+                  <ListItem sx={{ padding: '0px !important' }}>
+                    <ListItemText
+                      primary="Added Building:"
+                      sx={{ color: 'text.secondary' }}
+                    />
+                    <ListItemText
+                      sx={{ textAlign: 'right', color: 'text.secondary' }}
+                      primary={orderInModal.addedBuilding ? "Yes" : "No"}
+                    />
+                  </ListItem>
+                  <ListItem sx={{ padding: '0px !important' }}>
+                    <ListItemText
+                      primary="Estate Name:"
+                      sx={{ color: 'text.secondary' }}
+                    />
+                    <ListItemText
+                      sx={{ textAlign: 'right', color: 'text.secondary' }}
+                      primary={orderInModal.estateName}
+                    />
+                  </ListItem>
+                  <ListItem sx={{ padding: '0px !important' }}>
+                    <ListItemText
+                      primary="Payment Method:"
+                      sx={{ color: 'text.secondary' }}
+                    />
+                    <ListItemText
+                      sx={{ textAlign: 'right', color: 'text.secondary' }}
+                      primary={orderInModal.paymentMethod === "instalmentPayment" ? "Instalment Payment" : "Full Payment"}
+                    />
+                  </ListItem>
+                  <ListItem sx={{ padding: '0px !important' }}>
+                    <ListItemText
+                      primary="Land Size:"
+                      sx={{ color: 'text.secondary' }}
+                    />
+                    <ListItemText
+                      sx={{ textAlign: 'right', color: 'text.secondary' }}
+                      primary={orderInModal.landSize}
+                    />
+                  </ListItem>
+                  <ListItem sx={{ padding: '0px !important' }}>
+                    <ListItemText
+                      primary="land Estimated Price:"
+                      sx={{ fontWeight: 900 }}
+                    />
+                    <ListItemText
+                      sx={{ textAlign: 'right', fontWeight: 'bolder' }}
+                      primary={orderInModal.landEstimatedPrice}
+                    />
+                  </ListItem>
+                  
+                  <ListItem sx={{ padding: '0px !important' }}>
+                    <ListItemText
+                      primary="Legal fee:"
+                      sx={{ color: 'text.secondary' }}
+                    />
+                    <ListItemText
+                      sx={{ textAlign: 'right', color: 'text.secondary' }}
+                      primary={orderInModal.legalFee}
+                    />
+                  </ListItem>
+                  <ListItem sx={{ padding: '0px !important' }}>
+                    <ListItemText
+                      primary="Infrastructure fee:"
+                      sx={{ color: 'text.secondary' }}
+                    />
+                    <ListItemText
+                      sx={{ textAlign: 'right', color: 'text.secondary' }}
+                      primary={orderInModal.infrastructureFee}
+                    />
+                  </ListItem>
+                  <ListItem sx={{ padding: '0px !important' }}>
+                    <ListItemText
+                      primary="Survey fee:"
+                      sx={{ color: 'text.secondary' }}
+                    />
+                    <ListItemText
+                      sx={{ textAlign: 'right', color: 'text.secondary' }}
+                      primary={orderInModal.surveyFee}
+                    />
+                  </ListItem>
+                  <ListItem sx={{ padding: '0px !important' }}>
+                    <ListItemText
+                      primary="Engineering supervision fee:"
+                      sx={{ color: 'text.secondary' }}
+                    />
+                    <ListItemText
+                      sx={{ textAlign: 'right', color: 'text.secondary' }}
+                      primary={orderInModal.engineeringSupervisionFee}
+                    />
+                  </ListItem>
+                  <hr />
+                  <ListItem sx={{ padding: '0px !important' }}>
+                    <ListItemText
+                      primary="Discount:"
+                      sx={{ color: 'text.secondary' }}
+                    />
+                    <ListItemText
+                      sx={{ textAlign: 'right', color: 'text.secondary' }}
+                      primary={orderInModal.discount}
+                    />
+                  </ListItem>
+                  <ListItem sx={{ padding: '0px !important' }}>
+                    <ListItemText
+                      primary="Total Estimated Price:"
+                      sx={{ fontWeight: '900' }}
+                    />
+                    <ListItemText
+                      sx={{ textAlign: 'right', fontWeight: '900' }}
+                      primary={
+                        <NumberFormat
+                        value={Math.trunc(orderInModal.totalEstimatedPrice)}
+                        displayType="text"
+                        thousandSeparator={true}
+                        prefix="# "
+                      />
+                      }
+                    />
+                  </ListItem>
+                </List>
+                <p>This This is a summary of your order. You can speak to an agent if you require further assistance.</p>
+              </CardContent>
+
+              <CardActions
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  px: "10px",
+                  pb: '10px'
+                }}
+              >
+                <Stack direction="row" sx={{ width: "100%" }}>
+                  <LoadingButton sx={{
+                    padding: "10px 30px",
+                    marginRight: "10px"
+                  }} fullWidth variant="contained" color="neutral"
+                    onClick={handlePayment}
+                    loading={makingPayment}
+                  >
+                    Proceed to Payment
+                  </LoadingButton>
+                  <Button variant="contained" color="primary">
+                    <PhoneIcon fontSize="medium" />
+                  </Button>
+                </Stack>
+              </CardActions>
+
+
+            </Card>
+          )
+        }
+
+      </Fade>
+    </Modal>
   )
 
 
@@ -238,13 +503,12 @@ export default function HomePage() {
               <CardContent sx={{ px: { lg: "50px", md: "50px", sm: "30px", xs: "50px 10px" } }}>
                 <FormControl component="fieldset">
                   <RadioGroup
-                    onChange={handleChange}
+                    onChange={(e) => setFormState((prev) => ({ ...prev, paymentMethod: e.target.value }))}
                     aria-label="payment"
-                    defaultValue="fullPayment"
                     name="paymentMethod"
                   >
-                    <FormControlLabel sx={{mb:"30px"}} value="fullPayment" control={<Radio />} label={RadioLabel({primary:'Full Payment',secondary:'Pay 100% of the total value once.'})} />
-                    <FormControlLabel value="instalmentPayment" control={<Radio />} label={RadioLabel({primary:'Two Payment', secondary:'Pay 50% of the total value upfront and the balance in 30 days.'})} />
+                    <FormControlLabel sx={{ mb: "30px" }} value="fullPayment" control={<Radio />} label={RadioLabel({ primary: 'Full Payment', secondary: 'Pay 100% of the total value once.' })} />
+                    <FormControlLabel value="instalmentPayment" control={<Radio />} label={RadioLabel({ primary: 'instalment Payment', secondary: 'Pay 50% of the total value upfront and the balance in 30 days.' })} />
                   </RadioGroup>
                 </FormControl>
               </CardContent>
@@ -258,9 +522,9 @@ export default function HomePage() {
               >
                 <LoadingButton
                   loading={gettingEstimate}
-                 sx={{
-                  padding: "15px 30px"
-                }} fullWidth variant="contained" color="neutral" onClick={() => handleGetEstimate()}>
+                  sx={{
+                    padding: "15px 30px"
+                  }} fullWidth variant="contained" color="neutral" onClick={() => handleGetEstimate()}>
                   Save and continue
                 </LoadingButton>
               </CardActions>
@@ -330,7 +594,7 @@ export default function HomePage() {
                       }}
                     >
                       {
-                        data.data.map(fac => <MenuItem key={`e-${fac._id}`} value={fac._id} >{fac.estateName}</MenuItem>)
+                        error ? <p>Error</p> : isLoading ? <MenuItem>Loading...</MenuItem> : data.data.map(fac => <MenuItem key={`e-${fac._id}`} value={fac._id} >{fac.estateName}</MenuItem>)
                       }
                     </TextField>
                     <Stack direction="row" spacing={2}>
@@ -358,7 +622,7 @@ export default function HomePage() {
                       </Grid>
                       <Grid item lg={6} sm={6} md={6} xs={6}>
                         <TextField
-                          onChange={handleChange}
+                          onChange={(e) => setFormState((prev) => ({ ...prev, buildingTypeId: e.target.value }))}
                           name="buildingTypeId"
                           select
                           fullWidth
@@ -543,10 +807,10 @@ export default function HomePage() {
         >
           {
             isLoadingCardData ? <TentSpinner /> : cardDataError ? 'error' : (
-              cardData.data.map((data) =>{
+              cardData.data.map((data) => {
                 return <SwiperSlide key={`index-slide-${data._id}`}>
-                <AtmCard {...data}/>
-               </SwiperSlide>
+                  <AtmCard {...data} />
+                </SwiperSlide>
               })
             )
           }
@@ -554,6 +818,7 @@ export default function HomePage() {
       </Box>
       {GetEstimateModal}
       {PaymentTypeModal}
+      {InvoiceModal}
     </AppLayout>
   );
 }

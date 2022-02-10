@@ -89,7 +89,7 @@ const extendedApi = emptySplitApi.injectEndpoints({
         body: body,
       })
     }),
-    verifyPhone: builder.mutation<BaseResponse<string>, { phone: string, otp: string }>({
+    verifyPhone: builder.mutation<BaseResponse<UserDataType>, { phoneNumber: string, otp: string }>({
       query: (body) => ({
         url: 'user/verify-phone',
         method: 'POST',

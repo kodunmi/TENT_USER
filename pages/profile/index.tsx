@@ -21,7 +21,7 @@ import { TentTextField, uploadFile } from "../../components";
 import { useAppDispatch, useAuth } from "../../hooks";
 import { AppLayout } from "../../layout";
 import { BaseResponse, statesOfNigeria, UserDataType } from "../../lib";
-import { BuildProjectRequest, useBuildProfileMutation, useEditProfileMutation, useRequestPhoneVerificationMutation } from '../../services'
+import { BuildProjectRequest, useBuildProfileMutation, useEditProfileMutation, useRequestPhoneVerificationMutation, useVerifyPhoneMutation } from '../../services'
 import { styled } from '@mui/material/styles';
 import { setCredentials, setProfile, setProfilePicture } from "../../redux";
 import { LoadingButton } from '@mui/lab';
@@ -41,11 +41,14 @@ const Profile = () => {
   const [buildProfile, { isLoading }] = useBuildProfileMutation()
   const [editProfile, { isLoading: isEditing }] = useEditProfileMutation()
   const [sendVerifyPhoneMailMutation, { isLoading: sendingMail }] = useRequestPhoneVerificationMutation()
+  const [verifyPhoneMutation, { isLoading: verifyingPhone }] = useVerifyPhoneMutation()
   const [selectedFile, setSelectedFile] = useState()
   const [preview, setPreview] = useState<string | undefined>()
   const { enqueueSnackbar } = useSnackbar();
   const [uploadingImage, setUploadingImage] = useState(false)
   const dispatch = useAppDispatch()
+  const [code, setCode] = useState('');
+  const [openVerifyModal, setOpenVerifyModal] = useState(false);
   const handleChange2 = ({
     target: { name, value },
   }: React.ChangeEvent<HTMLInputElement>) =>
@@ -141,6 +144,9 @@ const Profile = () => {
   const updatePhoneAndSendMessage = async () => {
     try {
       const res = await editProfile({ phoneNumber: phone }).unwrap()
+
+      console.log(res);
+      
       dispatch(setProfile(res.data))
 
       sendVerifyPhoneMail()
@@ -156,6 +162,13 @@ const Profile = () => {
     try {
       console.log(phone);
       const response = await sendVerifyPhoneMailMutation(phone).unwrap()
+      
+
+      enqueueSnackbar(response.data, {
+        variant: 'success'
+      });
+
+      setOpenVerifyModal(true)
 
 
     } catch (err) {
@@ -190,6 +203,28 @@ const Profile = () => {
 
     sendVerifyPhoneMail()
   }
+
+  const handleVerifyPhone = async () => {
+    try {
+      const response = await verifyPhoneMutation({phoneNumber: user.phoneNumber, otp:code}).unwrap()
+
+      dispatch(setProfile(response.data))
+
+      setOpenVerifyModal(false)
+      setOpen(false)
+
+      enqueueSnackbar('phone number verified', {
+        variant: 'success'
+      });
+      
+
+    } catch (err) {
+      enqueueSnackbar(err.data ? err.data.message : "We could not process your request", {
+        variant: 'warning'
+      });
+    }
+  }
+
 
   const handleProfileUpdate = async (e) => {
 
@@ -283,6 +318,87 @@ const Profile = () => {
     console.log(formState)
   }
 
+  const VerifyPhoneModal = (
+    <Modal
+      aria-labelledby="transition-modal-title"
+      aria-describedby="transition-modal-description"
+      open={openVerifyModal}
+      onClose={() => setOpenVerifyModal(false)}
+      closeAfterTransition
+      BackdropComponent={Backdrop}
+      BackdropProps={{
+        timeout: 500,
+      }}
+    >
+      <Fade in={openVerifyModal}>
+        <Card
+          sx={{
+            position: "absolute" as "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { lg: "500px", xs: "90%", sm: "70%", md: "500px" },
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            borderRadius: "13px"
+          }}
+        >
+          <CardHeader
+            sx={{
+              borderBottom: "1px solid #F5F5F5",
+              padding: "20px 0px 20px 20px",
+              textAlign: "center",
+            }}
+            title="Verify phone number"
+          />
+          {
+            <form>
+              <CardContent sx={{ px: { lg: "50px", md: "50px", sm: "30px", xs: "50px 10px" } }}>
+                <p>Enter OTP</p>
+                <TentTextField
+                  onChange={(e) => setCode(e.target.value)}
+                  required
+                  sx={{
+                    border: "none",
+                    backgroundColor: "action.hover",
+                    borderRadius: "5px",
+                  }}
+                  value={code}
+                  name="fullName"
+                  type="text"
+                  placeholder="name"
+
+                />
+                {/* <ReactPhoneInput
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)} // passed function receives the phone value
+                  component={TentTextField}
+                /> */}
+              </CardContent>
+              <CardActions
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "32px 50px",
+                }}
+              >
+                <LoadingButton
+                  // loading={gettingEstimate}
+                  sx={{
+                    padding: "15px 30px"
+                  }} fullWidth variant="contained" color="neutral" onClick={() => handleVerifyPhone()}>
+                  Verify Phone
+                </LoadingButton>
+              </CardActions>
+            </form>
+          }
+
+        </Card>
+      </Fade>
+    </Modal>
+  )
+
   const PhoneVerificationModal = (
     <Modal
       aria-labelledby="transition-modal-title"
@@ -314,7 +430,7 @@ const Profile = () => {
               padding: "20px 0px 20px 20px",
               textAlign: "center",
             }}
-            title="Verify phone number"
+            title="Send Verification Code"
           />
           {
             <form>
@@ -895,6 +1011,7 @@ const Profile = () => {
         </Box>
       </Box>
       {PhoneVerificationModal}
+      {VerifyPhoneModal}
     </AppLayout>
   );
 };

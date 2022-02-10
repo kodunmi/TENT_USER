@@ -131,7 +131,7 @@ export const SideDrawer = ({handleOpenDrawer, handleCloseDrawer, openDrawer}:Dra
                   alignItems="flex-end"
                   button
                   key={menu.route}
-                  secondaryAction={menu.countable ? <MenuCount>{ menu.route === "/notifications" ? 12 : menu.route == "/orders" ? !isLoading && data.data.myOrderCount : 6} </MenuCount> : menu.route === "/profile" ? user.profileVerified ? <Activation background="green">ACTIVATED</Activation>:<Activation background="red">UNACTIVATED</Activation> : ""}
+                  secondaryAction={menu.countable ? <MenuCount>{ menu.route === "/notifications" ? 12 : menu.route == "/orders" ? !error && !isLoading && data.data.myOrderCount : 6} </MenuCount> : menu.route === "/profile" ? user.profileVerified ? <Activation background="green">ACTIVATED</Activation>:<Activation background="red">UNACTIVATED</Activation> : ""}
                 >
                   <ListItemIcon>
                     <menu.icon color="#EACA1F" />

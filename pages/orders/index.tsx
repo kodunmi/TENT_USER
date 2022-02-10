@@ -9,6 +9,8 @@ import { useGetMyOrdersQuery } from "../../services/order";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PhoneIcon from '@mui/icons-material/PhoneCallback';
 import { WithAuth } from "../../HOC";
+import NumberFormat from "react-number-format";
+import moment from "moment";
 
 const Orders = () => {
   const [open, setOpen] = useState(false);
@@ -129,6 +131,7 @@ const Orders = () => {
       aria-describedby="transition-modal-description"
       open={open}
       onClose={handleClose}
+      disableAutoFocus
       closeAfterTransition
       BackdropComponent={Backdrop}
       BackdropProps={{
@@ -147,7 +150,9 @@ const Orders = () => {
                 width: { lg: "500px", xs: "90%", sm: "70%", md: "500px" },
                 bgcolor: "background.paper",
                 boxShadow: 24,
-                borderRadius: "7px"
+                borderRadius: "7px",
+                maxHeight: "80vh",
+                overflowY: "auto",
               }}
             >
               <CardHeader
@@ -165,7 +170,7 @@ const Orders = () => {
                   ORDER ID #{orderInModal.orderId}
                 </Typography>
                 <Typography variant="caption">
-                  Payment Date: {orderInModal.createdAt}
+                  Payment Date:{  moment(orderInModal.createdAt).format('Do MMM YYYY') }
                 </Typography>
                 <List sx={{
                   bgcolor: "action.hover",
@@ -216,22 +221,64 @@ const Orders = () => {
                   </ListItem>
                   <ListItem sx={{ padding: '0px !important' }}>
                     <ListItemText
-                      primary="Land Size:"
-                      sx={{ color: 'text.secondary' }}
-                    />
-                    <ListItemText
-                      sx={{ textAlign: 'right', color: 'text.secondary' }}
-                      primary={orderInModal.landSize}
-                    />
-                  </ListItem>
-                  <ListItem sx={{ padding: '0px !important' }}>
-                    <ListItemText
                       primary="land Estimated Price:"
                       sx={{ fontWeight: 900 }}
                     />
                     <ListItemText
                       sx={{ textAlign: 'right', fontWeight: 'bolder' }}
                       primary={orderInModal.landEstimatedPrice}
+                    />
+                  </ListItem>
+                  
+                  <ListItem sx={{ padding: '0px !important' }}>
+                    <ListItemText
+                      primary="Legal fee:"
+                      sx={{ color: 'text.secondary' }}
+                    />
+                    <ListItemText
+                      sx={{ textAlign: 'right', color: 'text.secondary' }}
+                      primary={orderInModal.legalFee}
+                    />
+                  </ListItem>
+                  <ListItem sx={{ padding: '0px !important' }}>
+                    <ListItemText
+                      primary="Infrastructure fee:"
+                      sx={{ color: 'text.secondary' }}
+                    />
+                    <ListItemText
+                      sx={{ textAlign: 'right', color: 'text.secondary' }}
+                      primary={orderInModal.infrastructureFee}
+                    />
+                  </ListItem>
+                  <ListItem sx={{ padding: '0px !important' }}>
+                    <ListItemText
+                      primary="Survey fee:"
+                      sx={{ color: 'text.secondary' }}
+                    />
+                    <ListItemText
+                      sx={{ textAlign: 'right', color: 'text.secondary' }}
+                      primary={orderInModal.surveyFee}
+                    />
+                  </ListItem>
+                  <ListItem sx={{ padding: '0px !important' }}>
+                    <ListItemText
+                      primary="Engineering supervision fee:"
+                      sx={{ color: 'text.secondary' }}
+                    />
+                    <ListItemText
+                      sx={{ textAlign: 'right', color: 'text.secondary' }}
+                      primary={orderInModal.engineeringSupervisionFee}
+                    />
+                  </ListItem>
+                  <hr />
+                  <ListItem sx={{ padding: '0px !important' }}>
+                    <ListItemText
+                      primary="Discount:"
+                      sx={{ color: 'text.secondary' }}
+                    />
+                    <ListItemText
+                      sx={{ textAlign: 'right', color: 'text.secondary' }}
+                      primary={orderInModal.discount}
                     />
                   </ListItem>
                   <ListItem sx={{ padding: '0px !important' }}>
@@ -241,7 +288,14 @@ const Orders = () => {
                     />
                     <ListItemText
                       sx={{ textAlign: 'right', fontWeight: '900' }}
-                      primary={orderInModal.totalEstimatedPrice}
+                      primary={
+                        <NumberFormat
+                        value={Math.trunc(orderInModal.totalEstimatedPrice)}
+                        displayType="text"
+                        thousandSeparator={true}
+                        prefix="# "
+                      />
+                      }
                     />
                   </ListItem>
                 </List>
@@ -312,13 +366,12 @@ const Orders = () => {
           <Typography variant="h5">{!isLoading && data.data.myOrderCount}</Typography>
         </Stack>
         <Divider variant="middle" />
-        <Box sx={{ overflow: 'scroll', height: "100vh" }}>
+        <Box sx={{ overflow: 'scroll', height: {md:"70vh", sm: "85vh", lg:"70vh", xs:"85vh"} }}>
           <Stack mt={2}>
 
             {
-              isLoading ? <TentSpinner /> : error ? <ErrorData/> : data.data.myOrderCount < 1 ? <EmptyData/> : data.data.myOrders.map((order: OrderType) => {
-                <OrderCard handleModalOpen={(order) => handleOpen(order)} order={order} />
-              })
+              error ? <ErrorData/>  : isLoading ? <TentSpinner /> : data.data.myOrderCount < 1 ? <EmptyData/> : data.data.myOrders.map((order: OrderType) => <OrderCard handleModalOpen={(order) => handleOpen(order)} order={order} />
+              )
             }
 
             {/* {

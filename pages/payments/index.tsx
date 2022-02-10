@@ -40,6 +40,7 @@ import creditCardType, {
 } from "credit-card-type";
 import { PaymentType } from "../../lib";
 import { WithAuth } from "../../HOC";
+import moment from "moment";
 
 const SCard = withTheme(styled(Card)`
   border-radius: 9.35294px;
@@ -85,7 +86,7 @@ const PaymentCard = (payment: PaymentType) => (
         <Typography mb={0} variant="h6">
           {`NGN ${payment.amount}`}
         </Typography>
-        <Typography variant="body2">{payment.paymentDate}</Typography>
+        <Typography variant="body2">{moment(payment.paymentDate).format('Do MMM YYYY')}</Typography>
       </Stack>
     </Grid>
   </SCard>
