@@ -138,7 +138,7 @@ const Payments = () => {
   }
 
   const PaymentCard = (payment: PaymentType) => (
-    <SCard onClick={() => router.push(`payments/${payment.order._id}?transactionId=${payment._id}`)} key={`payment-${payment._id}`}>
+    <SCard onClick={() => payment.paymentMethod === 'instalmentPayment' ? router.push(`payments/${payment.order._id}?transactionId=${payment._id}`):{}} key={`payment-${payment._id}`}>
       <Grid container justifyContent="space-between" alignItems="center">
         <Stack spacing={4} direction="row">
           <IconButton2>
