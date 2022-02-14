@@ -310,7 +310,7 @@ const Orders = () => {
           <Stack mt={2}>
 
             {
-              error ? <ErrorData/>  : isLoading ? <TentSpinner /> : data.data.myOrderCount < 1 ? <EmptyData/> : data.data.myOrders.map((order: OrderType) => <OrderCard handleModalOpen={(order) => handleOpen(order)} order={order} />
+              error ? <ErrorData/>  : isLoading ? <TentSpinner /> : data.data.myOrderCount < 1 ? <EmptyData/> : data.data.myOrders.map((order: OrderType) => <OrderCard key={`orders-${order._id}`} handleModalOpen={(order) => handleOpen(order)} order={order} />
               )
             }
 
