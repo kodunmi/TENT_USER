@@ -104,7 +104,7 @@ export interface FacilityType {
 export interface OrderType {
     addedBuilding?: boolean
     discount?: number
-    status: "processing"|"complete"|"terminate"
+    status: "processing"|"completed"|"terminate"
     paymentCompleted?: boolean
     instalmentPaymentStarted?: boolean
     _id: string
@@ -136,6 +136,39 @@ export interface OrderType {
     surveyFee?: number
     engineeringSupervisionFee?: number
     totalEstimatedPrice: number
+    nextPaymentDaysLeft?: number
+    instalmentPayment?: {
+        totalPaid: number
+        numOfPaymentMade: number,
+        nextPaymentDueDate: string
+        firstPayment: {
+            amount: number
+            paid: boolean
+            datePaid: null | string
+            invoiceRef: number
+        },
+        secondPayment: {
+            amount: string
+            paid: boolean
+            datePaid: null | string
+            invoiceRef: null | number
+        },
+        thirdPayment: {
+            amount: number
+            paid: boolean
+            datePaid: null | string,
+            invoiceRef: null | number
+        }
+    },
+}
+
+export interface InstallmentOrderType {
+    paymentPlan:{
+        firstPayment:string
+        secondPayment:string
+        thirdPayment:string
+    }
+    order: OrderType
 }
 
 export interface PaymentType {
@@ -148,7 +181,7 @@ export interface PaymentType {
       phoneNumber: string
       tentUserId: string
       profileImage: string
-    } | string,
+    },
     order: {
       _id: string
       estateId: string
@@ -161,7 +194,7 @@ export interface PaymentType {
     amount: number
     currency: string
     invoiceRef: string
-    paymentMethod: paymentMethodEnums
+    paymentMethod: 'instalmentPayment' | 'fullPayment'
     payment_options: string
     flw_ref: string
     flutterId: number,

@@ -33,15 +33,5 @@ export const MenuList: Array<MenuItemType> = [
     route: '/payments',
     icon: TransactionsIcon,
     display: 'Payments',
-  },
-  {
-    route: '/support',
-    icon: MessagesIcon,
-    display: 'Support'
-  },
-  {
-    route: '/login',
-    icon: MessagesIcon,
-    display: 'Support'
   }
 ];

@@ -51,4 +51,4 @@ const extendedApi = emptySplitApi.injectEndpoints({
     })
 })
 
-export const {useGetTransactionsQuery,useMakePaymentMutation,useVerifyTransactionQuery, useGetTransactionByIdQuery} = extendedApi
+export const {useGetTransactionsQuery,useMakePaymentMutation,useVerifyTransactionQuery, useGetTransactionByIdQuery, useLazyGetTransactionByIdQuery, useLazyVerifyTransactionQuery} = extendedApi

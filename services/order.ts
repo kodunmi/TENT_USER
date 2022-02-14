@@ -1,4 +1,4 @@
-import { BaseResponse, paymentMethodEnums, OrderType, orderStatusEnums } from './../lib/type';
+import { BaseResponse, InstallmentOrderType, OrderType, orderStatusEnums } from './../lib/type';
 import { emptySplitApi } from './base';
 
 interface getMyOrdersResponse {
@@ -8,11 +8,11 @@ interface getMyOrdersResponse {
     myOrders: Array<OrderType>
 }
 
-export interface getEstimateProps { estateId: string, landSize: number, paymentMethod: string, buildingTypeId?: string}
+export interface getEstimateProps { estateId: string, landSize: number, paymentMethod: 'fullPayment' | 'instalmentPayment', buildingTypeId?: string}
 
 const extendedApi = emptySplitApi.injectEndpoints({
     endpoints: (builder) => ({
-        getEstimate: builder.mutation<BaseResponse<OrderType>, getEstimateProps>({
+        getEstimate: builder.mutation<BaseResponse<OrderType | InstallmentOrderType>, getEstimateProps>({
             query: (body) => ({
                 url: "order/estimate",
                 method: "POST",
@@ -34,4 +34,4 @@ const extendedApi = emptySplitApi.injectEndpoints({
     })
 })
 
-export const {useGetEstimateMutation,useGetMyOrdersQuery,useGetMyOrderByIdQuery } = extendedApi
+export const {useGetEstimateMutation,useGetMyOrdersQuery,useGetMyOrderByIdQuery, useLazyGetMyOrderByIdQuery } = extendedApi

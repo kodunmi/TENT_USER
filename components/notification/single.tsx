@@ -1,11 +1,12 @@
 import { ListItem, Stack, Typography } from '@mui/material'
 import { Box } from '@mui/system'
-import React from 'react'
+import React, { Dispatch, SetStateAction } from 'react'
 import { NotificationType } from '../../pages/notifications'
 import styles from 'styled-components'
 import { useDispatch } from 'react-redux'
 import { setActiveNotification } from '../../redux'
 import { useAuth } from '../../hooks'
+import moment from 'moment'
 
 
 const NotificationTypeBadge = styles.div`
@@ -26,19 +27,19 @@ const Dot = styles.div`
 `
 
 
-export const NotificationCard = (notification: NotificationType) => {
+export const NotificationCard = ({notification, handleClick}:{notification: NotificationType,handleClick?: Dispatch<SetStateAction<NotificationType>> }) => {
     const dispatch = useDispatch()
     const {user} = useAuth()
     return (
-        <ListItem sx={{cursor: 'pointer'}}  onClick={()=>dispatch(setActiveNotification(notification))}>
+        <ListItem sx={{cursor: 'pointer',borderBottom:"1.50318px solid #CCCCCC;", mb: '30px'}}  onClick={()=>handleClick(notification)}>
             <Stack justifyContent="space-evenly" spacing={2} direction="row">
-            <Dot background={notification.read ? "#C8C8C8":"#FEC545"}/>
+            <Dot background={notification.isRead ? "#C8C8C8":"#FEC545"}/>
             <Stack>
                 <Stack  direction="row" justifyContent="space-between">
-                    <NotificationTypeBadge background={notification.read ? "#C8C8C8":"#FEC545"} >{notification.type}</NotificationTypeBadge>
-                    <Typography variant="caption">{notification.date}</Typography>
+                    <NotificationTypeBadge background={notification.isRead ? "#C8C8C8":"#FEC545"} >{'Tent'}</NotificationTypeBadge>
+                    <Typography variant="caption">{moment(notification.date).format('Do MMM') }</Typography>
                 </Stack>
-                <Typography  color={notification.read && "#888888"} sx={{borderBottom:"1.50318px solid #CCCCCC;"}} pb={3} mb={3} variant="body1">{notification.title}</Typography>
+                <Typography  color={notification.isRead && "#888888"} pb={2}  variant="body1">{notification.title}</Typography>
             </Stack>
             
         </Stack>

@@ -70,7 +70,7 @@ export const OrderCard = ({order,handleModalOpen}: CardOrderProps) => {
           order.status == "terminate" && <Status background="red" >FAILED</Status>
         }
         {
-          order.status === "complete" && <Status background="#04C300" >SUCCESSFUL</Status>
+          order.status === "completed" && <Status background="#04C300" >SUCCESSFUL</Status>
         }
         {
           order.status === "processing" && <Status background="#00A3FF">PROCESSING</Status>

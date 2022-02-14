@@ -15,10 +15,13 @@ import {
   CardActions,
   Backdrop,
   MenuItem,
+  IconButton,
+  CircularProgressProps,
+  CircularProgress,
 } from "@mui/material";
 import { Box, display } from "@mui/system";
-import React from "react";
-import { ArrowRightButton, EmptyData, ErrorData, IconButton, TentSpinner, TentTextField } from "../../components";
+import React, { useEffect } from "react";
+import { ArrowRightButton, EmptyData, ErrorData, IconButton as IconButton2, TentSpinner, TentTextField } from "../../components";
 import { AppLayout } from "../../layout";
 import Search from "remixicon-react/SearchLineIcon";
 import { withTheme } from "@mui/styles";
@@ -30,7 +33,7 @@ import { SwiperSlide, Swiper } from "swiper/react";
 // Import Swiper styles
 import "swiper/css";
 import { styled as m } from "@mui/material/styles";
-import { CardProps, useAddCardMutation, useGetCardsQuery, useGetTransactionsQuery } from "../../services";
+import { CardProps, useAddCardMutation, useGetCardsQuery, useGetTransactionsQuery, useLazyVerifyTransactionQuery, useVerifyTransactionQuery } from "../../services";
 import { useSnackbar } from "notistack";
 import Cards from 'react-credit-cards';
 import 'react-credit-cards/es/styles-compiled.css';
@@ -38,9 +41,10 @@ import creditCardType, {
   getTypeInfo,
   types as CardType,
 } from "credit-card-type";
-import { PaymentType } from "../../lib";
+import { OrderType, PaymentType } from "../../lib";
 import { WithAuth } from "../../HOC";
 import moment from "moment";
+import {useRouter} from "next/router";
 
 const SCard = withTheme(styled(Card)`
   border-radius: 9.35294px;
@@ -50,169 +54,10 @@ const SCard = withTheme(styled(Card)`
   background-color: ${(props) => props.theme.palette.background.paper};
   background-image: none !important;
   margin-bottom: 5px;
+  cursor: pointer;
 `);
 
-const Item = m(Paper)(({ theme }) => ({
-  ...theme.typography.body2,
-  padding: theme.spacing(1),
-  textAlign: "center",
-  color: theme.palette.text.secondary,
-}));
 
-interface PaymentProps {
-  title: string;
-  location: string;
-  amount: string;
-  time: string;
-  type: "land" | "building";
-}
-
-
-const PaymentCard = (payment: PaymentType) => (
-  <SCard key={`payment-${payment._id}`}>
-    <Grid container justifyContent="space-between" alignItems="center">
-      <Stack spacing={4} direction="row">
-        <IconButton>
-          <Home />
-        </IconButton>
-        <Stack spacing={0}>
-          <Typography mb={0} variant="h6">
-            {payment.orderId}
-          </Typography>
-          <Typography variant="caption">{payment.order.estateName}</Typography>
-        </Stack>
-      </Stack>
-      <Stack spacing={0}>
-        <Typography mb={0} variant="h6">
-          {`NGN ${payment.amount}`}
-        </Typography>
-        <Typography variant="body2">{moment(payment.paymentDate).format('Do MMM YYYY')}</Typography>
-      </Stack>
-    </Grid>
-  </SCard>
-);
-
-const payments: Array<PaymentProps> = [
-  {
-    title: "12000sqm",
-    location: "sassasa,smsa",
-    amount: "23,000,000",
-    time: "1:30pm",
-    type: "land",
-  },
-  {
-    title: "12000sqm",
-    location: "sassasa,smsa",
-    amount: "23,000,000",
-    time: "1:30pm",
-    type: "building",
-  },
-  {
-    title: "12000sqm",
-    location: "sassasa,smsa",
-    amount: "23,000,000",
-    time: "1:30pm",
-    type: "land",
-  },
-  {
-    title: "12000sqm",
-    location: "sassasa,smsa",
-    amount: "23,000,000",
-    time: "1:30pm",
-    type: "land",
-  },
-  {
-    title: "12000sqm",
-    location: "sassasa,smsa",
-    amount: "23,000,000",
-    time: "1:30pm",
-    type: "building",
-  },
-  {
-    title: "12000sqm",
-    location: "sassasa,smsa",
-    amount: "23,000,000",
-    time: "1:30pm",
-    type: "land",
-  },
-  {
-    title: "12000sqm",
-    location: "sassasa,smsa",
-    amount: "23,000,000",
-    time: "1:30pm",
-    type: "land",
-  },
-  {
-    title: "12000sqm",
-    location: "sassasa,smsa",
-    amount: "23,000,000",
-    time: "1:30pm",
-    type: "building",
-  },
-  {
-    title: "12000sqm",
-    location: "sassasa,smsa",
-    amount: "23,000,000",
-    time: "1:30pm",
-    type: "land",
-  },
-  {
-    title: "12000sqm",
-    location: "sassasa,smsa",
-    amount: "23,000,000",
-    time: "1:30pm",
-    type: "building",
-  },
-  {
-    title: "12000sqm",
-    location: "sassasa,smsa",
-    amount: "23,000,000",
-    time: "1:30pm",
-    type: "land",
-  },
-  {
-    title: "12000sqm",
-    location: "sassasa,smsa",
-    amount: "23,000,000",
-    time: "1:30pm",
-    type: "land",
-  },
-  {
-    title: "12000sqm",
-    location: "sassasa,smsa",
-    amount: "23,000,000",
-    time: "1:30pm",
-    type: "building",
-  },
-  {
-    title: "12000sqm",
-    location: "sassasa,smsa",
-    amount: "23,000,000",
-    time: "1:30pm",
-    type: "land",
-  },
-  {
-    title: "12000sqm",
-    location: "sassasa,smsa",
-    amount: "23,000,000",
-    time: "1:30pm",
-    type: "land",
-  },
-  {
-    title: "12000sqm",
-    location: "sassasa,smsa",
-    amount: "23,000,000",
-    time: "1:30pm",
-    type: "building",
-  },
-  {
-    title: "12000sqm",
-    location: "sassasa,smsa",
-    amount: "23,000,000",
-    time: "1:30pm",
-    type: "land",
-  },
-];
 const Payments = () => {
   const formRef = React.useRef<HTMLFormElement>(null);
   const [open, setOpen] = React.useState(false);
@@ -221,6 +66,8 @@ const Payments = () => {
   const [addCard, { isLoading, error }] = useAddCardMutation();
   const { enqueueSnackbar } = useSnackbar();
   const [focus, setFocus] = React.useState('')
+  const router = useRouter()
+
   const { refetch, data, isLoading: loading, error: cardError } = useGetCardsQuery('', {
     refetchOnMountOrArgChange: true,
     refetchOnReconnect: true
@@ -230,6 +77,10 @@ const Payments = () => {
     refetchOnReconnect: true
   })
 
+  const [verifyTransaction, result] = useLazyVerifyTransactionQuery({
+    refetchOnReconnect: true,
+  })
+
   const [formState, setFormState] = React.useState<{ cardHolder: string, cvv: string, cardNumber: string, cardDate: string }>({
     cardHolder: '',
     cardNumber: '',
@@ -237,7 +88,32 @@ const Payments = () => {
     cardDate: '',
   })
 
-  console.log(data)
+  const transactionId = router.query.transaction_id
+
+  useEffect(() => {
+
+    const verify = async () => {
+      if (transactionId) {
+        
+        try {
+          const resp = await verifyTransaction(Number(transactionId)).unwrap()
+
+          console.log(resp)
+
+          router.push('/payments')
+          
+        } catch (err) {
+          enqueueSnackbar(err.data ? err.data.message : "We could not process your request", {
+            variant: 'warning'
+          });
+        }
+
+        
+      }
+    }
+
+    verify()
+  }, [transactionId])
 
   const handleInputFocus = (e) => {
     setFocus(e.target.name)
@@ -260,6 +136,30 @@ const Payments = () => {
       setFormState((prev) => ({ ...prev, [name]: value }))
     }
   }
+
+  const PaymentCard = (payment: PaymentType) => (
+    <SCard onClick={() => router.push(`payments/${payment.order._id}?transactionId=${payment._id}`)} key={`payment-${payment._id}`}>
+      <Grid container justifyContent="space-between" alignItems="center">
+        <Stack spacing={4} direction="row">
+          <IconButton2>
+            <Home />
+          </IconButton2>
+          <Stack spacing={0}>
+            <Typography mb={0} variant="h6">
+              {payment.orderId}
+            </Typography>
+            <Typography variant="caption">{payment.order.estateName}</Typography>
+          </Stack>
+        </Stack>
+        <Stack spacing={0}>
+          <Typography mb={0} variant="h6">
+            {`NGN ${payment.amount}`}
+          </Typography>
+          <Typography variant="body2">{moment(payment.paymentDate).format('Do MMM YYYY')}</Typography>
+        </Stack>
+      </Grid>
+    </SCard>
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -284,7 +184,7 @@ const Payments = () => {
       try {
         const { data } = await addCard(formData).unwrap()
         console.log(data)
-          refetch()
+        refetch()
         enqueueSnackbar('card added successfully', {
           variant: 'success'
         })
@@ -295,6 +195,7 @@ const Payments = () => {
       }
     }
   }
+
 
   const AddCardModal = (
     <Modal
@@ -464,6 +365,7 @@ const Payments = () => {
             direction={{ xs: "column", sm: "column", md: "row" }}
             spacing={{ xs: 6, sm: 6, md: 4 }}
             divider={<Divider orientation="vertical" flexItem />}
+            sx={{ height: "100%" }}
           >
             <Grid md={5} sm={12} xs={12} lg={5} item>
               <Box pt={3} p={2}>
@@ -480,14 +382,16 @@ const Payments = () => {
                   </Button>
                 </Stack>
                 <Box sx={{ marginTop: "50px", height: "100px" }}>
-                  <Swiper
+                  {
+                    loading ? <TentSpinner /> : cardError ? <ErrorData /> : data.data.cards.length < 1 ? <EmptyData /> : (
+                      <Swiper
                     slidesPerView={1}
                     pagination={{
                       clickable: true,
                     }}
                     loop={true}
                   >
-                    {loading ? <TentSpinner /> : cardError ? <ErrorData /> : data.data.cards.length < 1 ? <EmptyData /> : data.data.cards.map((card) =>
+                    { data.data.cards.map((card) =>
                       <SwiperSlide key={`index-card-${card._id}`}>
                         <Cards
                           cvc={card.cvv}
@@ -508,6 +412,9 @@ const Payments = () => {
                       </div>
                     </SwiperSlide> */}
                   </Swiper>
+                    )
+                  }
+                  
                 </Box>
               </Box>
             </Grid>

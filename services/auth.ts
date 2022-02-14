@@ -151,7 +151,7 @@ const extendedApi = emptySplitApi.injectEndpoints({
       })
     }),
 
-    resetPassword: builder.mutation<BaseResponse<string>, {email: string, otp: string, oldPassword:string, repeatPassword:string}>({
+    resetPassword: builder.mutation<BaseResponse<string>, {email: string, otp: number, newPassword:string, repeatPassword:string}>({
       query: (body) => ({
         url: 'user/reset-password',
         method: 'POST',

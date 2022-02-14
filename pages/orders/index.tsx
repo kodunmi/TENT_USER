@@ -4,126 +4,66 @@ import React, { useEffect, useState } from "react";
 import { EmptyData, OrderCard, TentSpinner,ErrorData } from "../../components";
 import { useAuth } from "../../hooks";
 import { AppLayout } from "../../layout";
-import { OrderProps, OrderType } from "../../lib/type";
+import { OrderProps, OrderType, InstallmentOrderType } from "../../lib/type";
 import { useGetMyOrdersQuery } from "../../services/order";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PhoneIcon from '@mui/icons-material/PhoneCallback';
 import { WithAuth } from "../../HOC";
 import NumberFormat from "react-number-format";
 import moment from "moment";
+import { FrontendUrl } from "../../lib";
+import { useSnackbar } from "notistack";
+import { useMakePaymentMutation } from "../../services";
+import { LoadingButton } from "@mui/lab";
 
 const Orders = () => {
   const [open, setOpen] = useState(false);
-  const [orderInModal, setOrderInModal] = useState<OrderType | undefined>();
+  const { enqueueSnackbar } = useSnackbar();
+  let [orderInModal, setOrderInModal] = useState<OrderType | undefined | InstallmentOrderType>();
+  const [makePayment, { isLoading: makingPayment }] = useMakePaymentMutation()
   const { user } = useAuth()
   const handleOpen = (order: OrderType): void => {
     setOrderInModal(order)
     setOpen(true);
   }
+  const [page, setpage] = useState(1)
 
-  const { refetch, data, isLoading, error } = useGetMyOrdersQuery({ pageNumber: 1, sortBy: 'createdAt', order: 'desc' }, {
+  const { refetch, data, isLoading, error } = useGetMyOrdersQuery({ pageNumber: page, sortBy: 'createdAt', order: 'desc' },{
     refetchOnMountOrArgChange: true,
-    skip: false,
   })
 
   useEffect(() => {
     refetch()
   }, [])
 
-  const data2: Array<OrderType> = [
-    {
-      addedBuilding: true,
-      status: "processing",
-      paymentCompleted: false,
-      _id: "616219ba06f7ac55a019a98e",
-      estateId: {
-        estateLocation: {
-          address: "Adeleke Street, Off PMP Headquaters",
-          city: "Wuse",
-          state: "Abuja",
-          zipCode: 6749003
-        },
-        _id: "6161e20f16e9a84b78f7317a",
-        estateName: "Pen Villa Estate"
-      },
-      landSize: 7152,
-      paymentMethod: "fullPayment",
-      user: "616197db0a75444594c134f5",
-      estateName: "Pen Villa Estate",
-      landEstimatedPrice: 71520,
-      building: {
-        buildingType: "Pent House",
-        numberOfRoom: 7,
-        buildingEstimatedPrice: 70000
-      },
-      orderId: "ORD9830000",
-      createdAt: "2021-10-09T22:37:46.493Z",
-      updatedAt: "2021-10-09T22:37:46.501Z",
-      totalEstimatedPrice: 141520
-    },
-    {
-      addedBuilding: true,
-      status: "complete",
-      paymentCompleted: false,
-      _id: "616219ba06f7ac55a019a98e",
-      estateId: {
-        estateLocation: {
-          address: "Adeleke Street, Off PMP Headquaters",
-          city: "Wuse",
-          state: "Abuja",
-          zipCode: 6749003
-        },
-        _id: "6161e20f16e9a84b78f7317a",
-        estateName: "Pen Villa Estate"
-      },
-      landSize: 7152,
-      paymentMethod: "fullPayment",
-      user: "616197db0a75444594c134f5",
-      estateName: "Pen Villa Estate",
-      landEstimatedPrice: 71520,
-      building: {
-        buildingType: "Pent House",
-        numberOfRoom: 7,
-        buildingEstimatedPrice: 70000
-      },
-      orderId: "ORD9830000",
-      createdAt: "2021-10-09T22:37:46.493Z",
-      updatedAt: "2021-10-09T22:37:46.501Z",
-      totalEstimatedPrice: 141520
-    },
-    {
-      addedBuilding: true,
-      status: "terminate",
-      paymentCompleted: false,
-      _id: "616219ba06f7ac55a019a98e",
-      estateId: {
-        estateLocation: {
-          address: "Adeleke Street, Off PMP Headquaters",
-          city: "Wuse",
-          state: "Abuja",
-          zipCode: 6749003
-        },
-        _id: "6161e20f16e9a84b78f7317a",
-        estateName: "Pen Villa Estate"
-      },
-      landSize: 7152,
-      paymentMethod: "fullPayment",
-      user: "616197db0a75444594c134f5",
-      estateName: "Pen Villa Estate",
-      landEstimatedPrice: 71520,
-      building: {
-        buildingType: "Pent House",
-        numberOfRoom: 7,
-        buildingEstimatedPrice: 70000
-      },
-      orderId: "ORD9830000",
-      createdAt: "2021-10-09T22:37:46.493Z",
-      updatedAt: "2021-10-09T22:37:46.501Z",
-      totalEstimatedPrice: 141520
-    }
-  ]
-
   const handleClose = () => setOpen(false);
+
+  
+
+  console.log(data);
+  
+  
+  orderInModal = orderInModal as OrderType;
+
+  
+  
+  const handlePayment = async () => {
+    try {
+    
+      let order = orderInModal as OrderType;
+      const res = await makePayment({ orderId: order._id, redirectLink: `${FrontendUrl}payments` }).unwrap()
+
+      window.location.href = res.data.data.link
+
+    } catch (err) {
+      enqueueSnackbar(err.data ? err.data.message : "We could not process your request", {
+        variant: 'warning'
+      });
+    }
+  }
+   
+  
+
 
   const viewOrder = (
     <Modal
@@ -163,7 +103,7 @@ const Orders = () => {
                 }
               />
               <CardContent sx={{ px: "10px" }}>
-                <Typography sx={{ fontWeight: "bolder" }} color={(orderInModal ? orderInModal.status === "complete" ? "#04C300 !important" : orderInModal.status === "processing" ? "#007aff !important" : "red !important" : '')} variant="h4">
+                <Typography sx={{ fontWeight: "bolder" }} color={(orderInModal ? orderInModal.status === "completed" ? "#04C300 !important" : orderInModal.status === "processing" ? "#007aff !important" : "red !important" : '')} variant="h4">
                   Order Summary
                 </Typography>
                 <Typography mt={6} variant="body1">
@@ -300,7 +240,7 @@ const Orders = () => {
                   </ListItem>
                 </List>
                 {
-                  orderInModal.status === 'complete' && (
+                  orderInModal.status === 'completed' && (
                     <div>
                       <Typography variant="caption">
                         This is a summary of your order. You can speak to an agent
@@ -336,13 +276,13 @@ const Orders = () => {
                 {
                   orderInModal.status === "processing" && (
                     <Stack direction="row" sx={{ width: "100%" }}>
-                      <Button sx={{
+                      <LoadingButton sx={{
                         padding: "10px 30px",
                         marginRight: "10px"
-                      }} fullWidth variant="contained" color="neutral">
+                      }} loading={makingPayment} onClick={() => handlePayment()} fullWidth variant="contained" color="neutral">
                         Proceed to Payment
-                      </Button>
-                      <Button variant="contained" color="primary">
+                      </LoadingButton>
+                      <Button  variant="contained" color="primary">
                         <PhoneIcon fontSize="inherit" />
                       </Button>
                     </Stack>

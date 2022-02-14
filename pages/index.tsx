@@ -12,7 +12,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import React, { useEffect, useRef, useState } from "react";
 import { useGetCardFacilitiesQuery, useGetFacilitiesQuery, useMakePaymentMutation } from "../services";
-import { BuildingType, FrontendUrl, OrderType, paymentMethodEnums } from "../lib";
+import { BuildingType, FrontendUrl, InstallmentOrderType, OrderType, paymentMethodEnums } from "../lib";
 import { getEstimateProps, useGetEstimateMutation } from "../services/order";
 import { useSnackbar } from "notistack";
 import { LoadingButton } from "@mui/lab";
@@ -115,6 +115,14 @@ const IPhoneContainer = styled.div`
   } 
 `;
 
+const PaymentCard = styled.div`
+  padding: 15px 10px;
+  border-radius: 6px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  background: #ffff;
+`;
+
 
 
 
@@ -129,7 +137,7 @@ export default function HomePage() {
   const [formState, setFormState] = useState<getEstimateProps>()
   const [openPaymentTypeModal, setOpenPaymentTypeModal] = useState(false)
   const [openInvoiceModal, setOpenInvoiceModal] = useState(false)
-  const [orderInModal, setOrderInModal] = useState<OrderType | undefined>();
+  let [orderInModal, setOrderInModal] = useState<OrderType | InstallmentOrderType | undefined>();
   const { refetch, data, error, isLoading } = useGetFacilitiesQuery('', {
     refetchOnMountOrArgChange: true,
     skip: false,
@@ -149,7 +157,7 @@ export default function HomePage() {
   })
   const [getEstimate, { isLoading: gettingEstimate }] = useGetEstimateMutation()
 
-  const [ makePayment , { isLoading: makingPayment }] = useMakePaymentMutation()
+  const [makePayment, { isLoading: makingPayment }] = useMakePaymentMutation()
 
   const handleEstateChange = ({
     target: { name, value },
@@ -182,7 +190,12 @@ export default function HomePage() {
     try {
       const resp = await getEstimate(formState).unwrap()
       console.log(resp);
-      setOrderInModal(resp.data)
+      if (formState.paymentMethod == 'fullPayment') {
+        setOrderInModal(resp.data as OrderType)
+      } else {
+        setOrderInModal(resp.data as InstallmentOrderType)
+      }
+
       setOpenInvoiceModal(true)
       enqueueSnackbar('Order placed successfully', { variant: 'success' })
 
@@ -197,7 +210,16 @@ export default function HomePage() {
 
   const handlePayment = async () => {
     try {
-      const res = await makePayment({orderId: orderInModal._id, redirectLink: `${FrontendUrl}payments`}).unwrap()
+
+      let orderId: string
+      if (orderInModal && formState.paymentMethod == 'fullPayment') {
+        const fullPayment = orderInModal as OrderType
+        orderId = fullPayment._id
+      } else {
+        const installmentPayment = orderInModal as InstallmentOrderType
+        orderId = installmentPayment.order._id
+      }
+      const res = await makePayment({ orderId: orderId, redirectLink: `${FrontendUrl}payments` }).unwrap()
 
       window.location.href = res.data.data.link
 
@@ -230,239 +252,526 @@ export default function HomePage() {
     </Stack>
   )
 
-  const InvoiceModal = (
-    <Modal
-      aria-labelledby="transition-modal-title"
-      aria-describedby="transition-modal-description"
-      open={openInvoiceModal}
-      // onClose={() => setOpenInvoiceModal(false)}
-      closeAfterTransition
-      BackdropComponent={Backdrop}
-      disableEnforceFocus={true}
-      disableAutoFocus={true}
-      BackdropProps={{
-        timeout: 500,
-      }}
-      disableEscapeKeyDown={true}
-    >
-      <Fade in={openInvoiceModal}>
-        {
-          orderInModal && (
-            <Card
-              sx={{
-                position: "absolute" as "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: { lg: "500px", xs: "90%", sm: "70%", md: "500px" },
-                bgcolor: "background.secondary",
-                boxShadow: 24,
-                borderRadius: "5px",
-                maxHeight: "80%",
-                overflowY: "auto",
-              }}
-            >
-              <CardHeader
+  const InvoiceModal = () => {
+
+    if (orderInModal && formState.paymentMethod == 'fullPayment') {
+
+      orderInModal = orderInModal as OrderType
+      return (
+        <Modal
+          aria-labelledby="transition-modal-title"
+          aria-describedby="transition-modal-description"
+          open={openInvoiceModal}
+          // onClose={() => setOpenInvoiceModal(false)}
+          closeAfterTransition
+          BackdropComponent={Backdrop}
+          disableEnforceFocus={true}
+          disableAutoFocus={true}
+          BackdropProps={{
+            timeout: 500,
+          }}
+          disableEscapeKeyDown={true}
+        >
+          <Fade in={openInvoiceModal}>
+            {
+              orderInModal && (
+                <Card
+                  sx={{
+                    position: "absolute" as "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: { lg: "500px", xs: "90%", sm: "70%", md: "500px" },
+                    bgcolor: "background.secondary",
+                    boxShadow: 24,
+                    borderRadius: "5px",
+                    maxHeight: "80%",
+                    overflowY: "auto",
+                  }}
+                >
+                  <CardHeader
+                    sx={{
+                      backgroundColor: "#EACA1F",
+                      padding: "20px 0px 20px 20px",
+                      textAlign: "left",
+                    }}
+                    title='Invoice Estimate'
+                  />
+
+
+                  <CardContent sx={{ px: "10px" }}>
+                    <InvoiceItem>
+                      <div style={{ display: 'flex' }}>
+                        <div style={{ marginRight: "15px", marginTop: "10px" }}>
+
+                          {
+                            orderInModal.addedBuilding ? <Home color="#EACA1F" /> : <Pin color="#EACA1F" />
+                          }
+
+                        </div>
+
+                        <div>
+                          <h3 style={{ marginTop: "0px", marginBottom: "0px" }}>1,200sqm of Land</h3>
+                          <p style={{ marginTop: "0px", fontSize: "16.087px", color: '#788190' }}>Diplomatic Hill Est. Bwari - Kaduna Ex...</p>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: "space-between", marginLeft: "40px" }}>
+                        <p>
+                          <NumberFormat
+                            value={Math.trunc(orderInModal.totalEstimatedPrice)}
+                            displayType="text"
+                            thousandSeparator={true}
+                            prefix="NGN "
+                          />
+                        </p>
+                        <p>{moment(orderInModal.createdAt).format('Do MMM YYYY')}</p>
+                      </div>
+                    </InvoiceItem>
+                    <List sx={{
+                      bgcolor: "action.hover",
+                      borderRadius: "10px",
+                      padding: "30px 20px 20px",
+                      mt: "20px",
+                      mb: "20px",
+                    }}>
+                      <ListItem sx={{ padding: '0px !important' }}>
+                        <ListItemText
+                          primary="Added Building:"
+                          sx={{ color: 'text.secondary' }}
+                        />
+                        <ListItemText
+                          sx={{ textAlign: 'right', color: 'text.secondary' }}
+                          primary={orderInModal.addedBuilding ? "Yes" : "No"}
+                        />
+                      </ListItem>
+                      <ListItem sx={{ padding: '0px !important' }}>
+                        <ListItemText
+                          primary="Estate Name:"
+                          sx={{ color: 'text.secondary' }}
+                        />
+                        <ListItemText
+                          sx={{ textAlign: 'right', color: 'text.secondary' }}
+                          primary={orderInModal.estateName}
+                        />
+                      </ListItem>
+                      <ListItem sx={{ padding: '0px !important' }}>
+                        <ListItemText
+                          primary="Payment Method:"
+                          sx={{ color: 'text.secondary' }}
+                        />
+                        <ListItemText
+                          sx={{ textAlign: 'right', color: 'text.secondary' }}
+                          primary={orderInModal.paymentMethod === "instalmentPayment" ? "Instalment Payment" : "Full Payment"}
+                        />
+                      </ListItem>
+                      <ListItem sx={{ padding: '0px !important' }}>
+                        <ListItemText
+                          primary="Land Size:"
+                          sx={{ color: 'text.secondary' }}
+                        />
+                        <ListItemText
+                          sx={{ textAlign: 'right', color: 'text.secondary' }}
+                          primary={orderInModal.landSize}
+                        />
+                      </ListItem>
+                      <ListItem sx={{ padding: '0px !important' }}>
+                        <ListItemText
+                          primary="land Estimated Price:"
+                          sx={{ fontWeight: 900 }}
+                        />
+                        <ListItemText
+                          sx={{ textAlign: 'right', fontWeight: 'bolder' }}
+                          primary={orderInModal.landEstimatedPrice}
+                        />
+                      </ListItem>
+
+                      <ListItem sx={{ padding: '0px !important' }}>
+                        <ListItemText
+                          primary="Legal fee:"
+                          sx={{ color: 'text.secondary' }}
+                        />
+                        <ListItemText
+                          sx={{ textAlign: 'right', color: 'text.secondary' }}
+                          primary={orderInModal.legalFee}
+                        />
+                      </ListItem>
+                      <ListItem sx={{ padding: '0px !important' }}>
+                        <ListItemText
+                          primary="Infrastructure fee:"
+                          sx={{ color: 'text.secondary' }}
+                        />
+                        <ListItemText
+                          sx={{ textAlign: 'right', color: 'text.secondary' }}
+                          primary={orderInModal.infrastructureFee}
+                        />
+                      </ListItem>
+                      <ListItem sx={{ padding: '0px !important' }}>
+                        <ListItemText
+                          primary="Survey fee:"
+                          sx={{ color: 'text.secondary' }}
+                        />
+                        <ListItemText
+                          sx={{ textAlign: 'right', color: 'text.secondary' }}
+                          primary={orderInModal.surveyFee}
+                        />
+                      </ListItem>
+                      <ListItem sx={{ padding: '0px !important' }}>
+                        <ListItemText
+                          primary="Engineering supervision fee:"
+                          sx={{ color: 'text.secondary' }}
+                        />
+                        <ListItemText
+                          sx={{ textAlign: 'right', color: 'text.secondary' }}
+                          primary={orderInModal.engineeringSupervisionFee}
+                        />
+                      </ListItem>
+                      <hr />
+                      <ListItem sx={{ padding: '0px !important' }}>
+                        <ListItemText
+                          primary="Discount:"
+                          sx={{ color: 'text.secondary' }}
+                        />
+                        <ListItemText
+                          sx={{ textAlign: 'right', color: 'text.secondary' }}
+                          primary={orderInModal.discount}
+                        />
+                      </ListItem>
+                      <ListItem sx={{ padding: '0px !important' }}>
+                        <ListItemText
+                          primary="Total Estimated Price:"
+                          sx={{ fontWeight: '900' }}
+                        />
+                        <ListItemText
+                          sx={{ textAlign: 'right', fontWeight: '900' }}
+                          primary={
+                            <NumberFormat
+                              value={Math.trunc(orderInModal.totalEstimatedPrice)}
+                              displayType="text"
+                              thousandSeparator={true}
+                              prefix="# "
+                            />
+                          }
+                        />
+                      </ListItem>
+                    </List>
+                    <p>This This is a summary of your order. You can speak to an agent if you require further assistance.</p>
+                  </CardContent>
+
+                  <CardActions
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      px: "10px",
+                      pb: '10px'
+                    }}
+                  >
+                    <Stack direction="row" sx={{ width: "100%" }}>
+                      <LoadingButton sx={{
+                        padding: "10px 30px",
+                        marginRight: "10px"
+                      }} fullWidth variant="contained" color="neutral"
+                        onClick={handlePayment}
+                        loading={makingPayment}
+                      >
+                        Proceed to Payment
+                      </LoadingButton>
+                      <Button variant="contained" color="primary">
+                        <PhoneIcon fontSize="medium" />
+                      </Button>
+                    </Stack>
+                  </CardActions>
+
+
+                </Card>
+              )
+            }
+
+          </Fade>
+        </Modal>
+      )
+    }
+
+    // if(orderInModal && formState.paymentMethod == 'instalmentPayment'){
+
+    orderInModal = orderInModal as InstallmentOrderType
+    return (
+      <Modal
+        aria-labelledby="transition-modal-title"
+        aria-describedby="transition-modal-description"
+        open={openInvoiceModal}
+        // onClose={() => setOpenInvoiceModal(false)}
+        closeAfterTransition
+        BackdropComponent={Backdrop}
+        disableEnforceFocus={true}
+        disableAutoFocus={true}
+        BackdropProps={{
+          timeout: 500,
+        }}
+        disableEscapeKeyDown={true}
+      >
+        <Fade in={openInvoiceModal}>
+          {
+            orderInModal && (
+              <Card
                 sx={{
-                  backgroundColor: "#EACA1F",
-                  padding: "20px 0px 20px 20px",
-                  textAlign: "left",
-                }}
-                title='Invoice Estimate'
-              />
-
-
-              <CardContent sx={{ px: "10px" }}>
-                <InvoiceItem>
-                  <div style={{ display: 'flex' }}>
-                    <div style={{ marginRight: "15px", marginTop: "10px" }}>
-
-                      {
-                        orderInModal.addedBuilding ? <Home color="#EACA1F" /> : <Pin color="#EACA1F" />
-                      }
-
-                    </div>
-
-                    <div>
-                      <h3 style={{ marginTop: "0px", marginBottom: "0px" }}>1,200sqm of Land</h3>
-                      <p style={{ marginTop: "0px", fontSize: "16.087px", color: '#788190' }}>Diplomatic Hill Est. Bwari - Kaduna Ex...</p>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: "space-between", marginLeft: "40px" }}>
-                    <p>
-                      <NumberFormat
-                        value={Math.trunc(orderInModal.totalEstimatedPrice)}
-                        displayType="text"
-                        thousandSeparator={true}
-                        prefix="NGN "
-                      />
-                    </p>
-                    <p>{moment(orderInModal.createdAt).format('Do MMM YYYY')}</p>
-                  </div>
-                </InvoiceItem>
-                <List sx={{
-                  bgcolor: "action.hover",
-                  borderRadius: "10px",
-                  padding: "30px 20px 20px",
-                  mt: "20px",
-                  mb: "20px",
-                }}>
-                  <ListItem sx={{ padding: '0px !important' }}>
-                    <ListItemText
-                      primary="Added Building:"
-                      sx={{ color: 'text.secondary' }}
-                    />
-                    <ListItemText
-                      sx={{ textAlign: 'right', color: 'text.secondary' }}
-                      primary={orderInModal.addedBuilding ? "Yes" : "No"}
-                    />
-                  </ListItem>
-                  <ListItem sx={{ padding: '0px !important' }}>
-                    <ListItemText
-                      primary="Estate Name:"
-                      sx={{ color: 'text.secondary' }}
-                    />
-                    <ListItemText
-                      sx={{ textAlign: 'right', color: 'text.secondary' }}
-                      primary={orderInModal.estateName}
-                    />
-                  </ListItem>
-                  <ListItem sx={{ padding: '0px !important' }}>
-                    <ListItemText
-                      primary="Payment Method:"
-                      sx={{ color: 'text.secondary' }}
-                    />
-                    <ListItemText
-                      sx={{ textAlign: 'right', color: 'text.secondary' }}
-                      primary={orderInModal.paymentMethod === "instalmentPayment" ? "Instalment Payment" : "Full Payment"}
-                    />
-                  </ListItem>
-                  <ListItem sx={{ padding: '0px !important' }}>
-                    <ListItemText
-                      primary="Land Size:"
-                      sx={{ color: 'text.secondary' }}
-                    />
-                    <ListItemText
-                      sx={{ textAlign: 'right', color: 'text.secondary' }}
-                      primary={orderInModal.landSize}
-                    />
-                  </ListItem>
-                  <ListItem sx={{ padding: '0px !important' }}>
-                    <ListItemText
-                      primary="land Estimated Price:"
-                      sx={{ fontWeight: 900 }}
-                    />
-                    <ListItemText
-                      sx={{ textAlign: 'right', fontWeight: 'bolder' }}
-                      primary={orderInModal.landEstimatedPrice}
-                    />
-                  </ListItem>
-                  
-                  <ListItem sx={{ padding: '0px !important' }}>
-                    <ListItemText
-                      primary="Legal fee:"
-                      sx={{ color: 'text.secondary' }}
-                    />
-                    <ListItemText
-                      sx={{ textAlign: 'right', color: 'text.secondary' }}
-                      primary={orderInModal.legalFee}
-                    />
-                  </ListItem>
-                  <ListItem sx={{ padding: '0px !important' }}>
-                    <ListItemText
-                      primary="Infrastructure fee:"
-                      sx={{ color: 'text.secondary' }}
-                    />
-                    <ListItemText
-                      sx={{ textAlign: 'right', color: 'text.secondary' }}
-                      primary={orderInModal.infrastructureFee}
-                    />
-                  </ListItem>
-                  <ListItem sx={{ padding: '0px !important' }}>
-                    <ListItemText
-                      primary="Survey fee:"
-                      sx={{ color: 'text.secondary' }}
-                    />
-                    <ListItemText
-                      sx={{ textAlign: 'right', color: 'text.secondary' }}
-                      primary={orderInModal.surveyFee}
-                    />
-                  </ListItem>
-                  <ListItem sx={{ padding: '0px !important' }}>
-                    <ListItemText
-                      primary="Engineering supervision fee:"
-                      sx={{ color: 'text.secondary' }}
-                    />
-                    <ListItemText
-                      sx={{ textAlign: 'right', color: 'text.secondary' }}
-                      primary={orderInModal.engineeringSupervisionFee}
-                    />
-                  </ListItem>
-                  <hr />
-                  <ListItem sx={{ padding: '0px !important' }}>
-                    <ListItemText
-                      primary="Discount:"
-                      sx={{ color: 'text.secondary' }}
-                    />
-                    <ListItemText
-                      sx={{ textAlign: 'right', color: 'text.secondary' }}
-                      primary={orderInModal.discount}
-                    />
-                  </ListItem>
-                  <ListItem sx={{ padding: '0px !important' }}>
-                    <ListItemText
-                      primary="Total Estimated Price:"
-                      sx={{ fontWeight: '900' }}
-                    />
-                    <ListItemText
-                      sx={{ textAlign: 'right', fontWeight: '900' }}
-                      primary={
-                        <NumberFormat
-                        value={Math.trunc(orderInModal.totalEstimatedPrice)}
-                        displayType="text"
-                        thousandSeparator={true}
-                        prefix="# "
-                      />
-                      }
-                    />
-                  </ListItem>
-                </List>
-                <p>This This is a summary of your order. You can speak to an agent if you require further assistance.</p>
-              </CardContent>
-
-              <CardActions
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  px: "10px",
-                  pb: '10px'
+                  position: "absolute" as "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  width: { lg: "500px", xs: "90%", sm: "70%", md: "500px" },
+                  bgcolor: "background.secondary",
+                  boxShadow: 24,
+                  borderRadius: "5px",
+                  maxHeight: "80%",
+                  overflowY: "auto",
                 }}
               >
-                <Stack direction="row" sx={{ width: "100%" }}>
-                  <LoadingButton sx={{
-                    padding: "10px 30px",
-                    marginRight: "10px"
-                  }} fullWidth variant="contained" color="neutral"
-                    onClick={handlePayment}
-                    loading={makingPayment}
-                  >
-                    Proceed to Payment
-                  </LoadingButton>
-                  <Button variant="contained" color="primary">
-                    <PhoneIcon fontSize="medium" />
-                  </Button>
-                </Stack>
-              </CardActions>
+                <CardHeader
+                  sx={{
+                    backgroundColor: "#EACA1F",
+                    padding: "20px 0px 20px 20px",
+                    textAlign: "left",
+                  }}
+                  title='Invoice Estimate'
+                />
 
 
-            </Card>
-          )
-        }
+                <CardContent sx={{ px: "10px" }}>
+                  {/* <Grid  columns={3} container spacing={1} sx={{ width:'100%' }}>
+                    <Grid xs={4} md={4} lg={4} sm={4} item>
+                      <TentCard rounded>
+                      {orderInModal.paymentPlan.firstPayment}
+                      </TentCard>
+                    </Grid>
+                    <Grid xs={4} md={4} lg={4} sm={4} item>
+                      <TentCard rounded>
+                      {orderInModal.paymentPlan.secondPayment}
+                      </TentCard>
+                    </Grid>
+                    <Grid xs={4} md={4} lg={4} sm={4} item>
+                      <TentCard rounded>
+                      {orderInModal.paymentPlan.thirdPayment}
+                      </TentCard>
+                    </Grid>
+                  </Grid> */}
+                  <Grid sx={{ mb: '20px' }} container spacing={1}>
+                    <Grid item xs={4}>
+                    <PaymentCard>
+                      <p>First<hr/> instalment</p>
+                      <h2>{orderInModal.paymentPlan.firstPayment}</h2>
+                    </PaymentCard>
+                      
+                    </Grid>
+                    <Grid item xs={4}>
+                      <PaymentCard>
+                        <p>Second<hr/> instalment</p>
+                        <h2>{orderInModal.paymentPlan.secondPayment}</h2>
+                      </PaymentCard>
+                      
+                    </Grid>
+                    <Grid item xs={4}>
+                      <PaymentCard>
+                        <p>Third<hr/> instalment</p>
+                        <h2>{orderInModal.paymentPlan.thirdPayment}</h2>
+                      </PaymentCard>
+                      
+                    </Grid>
 
-      </Fade>
-    </Modal>
-  )
+                  </Grid>
+                  <InvoiceItem>
+                    <div style={{ display: 'flex' }}>
+                      <div style={{ marginRight: "15px", marginTop: "10px" }}>
+
+                        {
+                          orderInModal.order.addedBuilding ? <Home color="#EACA1F" /> : <Pin color="#EACA1F" />
+                        }
+
+                      </div>
+
+                      <div>
+                        <h3 style={{ marginTop: "0px", marginBottom: "0px" }}>1,200sqm of Land</h3>
+                        <p style={{ marginTop: "0px", fontSize: "16.087px", color: '#788190' }}>Diplomatic Hill Est. Bwari - Kaduna Ex...</p>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: "space-between", marginLeft: "40px" }}>
+                      <p>
+                        <NumberFormat
+                          value={Math.trunc(orderInModal.order.totalEstimatedPrice)}
+                          displayType="text"
+                          thousandSeparator={true}
+                          prefix="NGN "
+                        />
+                      </p>
+                      <p>{moment(orderInModal.order.createdAt).format('Do MMM YYYY')}</p>
+                    </div>
+                  </InvoiceItem>
+                  <List sx={{
+                    bgcolor: "action.hover",
+                    borderRadius: "10px",
+                    padding: "30px 20px 20px",
+                    mt: "20px",
+                    mb: "20px",
+                  }}>
+                    <ListItem sx={{ padding: '0px !important' }}>
+                      <ListItemText
+                        primary="Added Building:"
+                        sx={{ color: 'text.secondary' }}
+                      />
+                      <ListItemText
+                        sx={{ textAlign: 'right', color: 'text.secondary' }}
+                        primary={orderInModal.order.addedBuilding ? "Yes" : "No"}
+                      />
+                    </ListItem>
+                    <ListItem sx={{ padding: '0px !important' }}>
+                      <ListItemText
+                        primary="Estate Name:"
+                        sx={{ color: 'text.secondary' }}
+                      />
+                      <ListItemText
+                        sx={{ textAlign: 'right', color: 'text.secondary' }}
+                        primary={orderInModal.order.estateName}
+                      />
+                    </ListItem>
+                    <ListItem sx={{ padding: '0px !important' }}>
+                      <ListItemText
+                        primary="Payment Method:"
+                        sx={{ color: 'text.secondary' }}
+                      />
+                      <ListItemText
+                        sx={{ textAlign: 'right', color: 'text.secondary' }}
+                        primary={orderInModal.order.paymentMethod === "instalmentPayment" ? "Instalment Payment" : "Full Payment"}
+                      />
+                    </ListItem>
+                    <ListItem sx={{ padding: '0px !important' }}>
+                      <ListItemText
+                        primary="Land Size:"
+                        sx={{ color: 'text.secondary' }}
+                      />
+                      <ListItemText
+                        sx={{ textAlign: 'right', color: 'text.secondary' }}
+                        primary={orderInModal.order.landSize}
+                      />
+                    </ListItem>
+                    <ListItem sx={{ padding: '0px !important' }}>
+                      <ListItemText
+                        primary="land Estimated Price:"
+                        sx={{ fontWeight: 900 }}
+                      />
+                      <ListItemText
+                        sx={{ textAlign: 'right', fontWeight: 'bolder' }}
+                        primary={orderInModal.order.landEstimatedPrice}
+                      />
+                    </ListItem>
+
+                    <ListItem sx={{ padding: '0px !important' }}>
+                      <ListItemText
+                        primary="Legal fee:"
+                        sx={{ color: 'text.secondary' }}
+                      />
+                      <ListItemText
+                        sx={{ textAlign: 'right', color: 'text.secondary' }}
+                        primary={orderInModal.order.legalFee}
+                      />
+                    </ListItem>
+                    <ListItem sx={{ padding: '0px !important' }}>
+                      <ListItemText
+                        primary="Infrastructure fee:"
+                        sx={{ color: 'text.secondary' }}
+                      />
+                      <ListItemText
+                        sx={{ textAlign: 'right', color: 'text.secondary' }}
+                        primary={orderInModal.order.infrastructureFee}
+                      />
+                    </ListItem>
+                    <ListItem sx={{ padding: '0px !important' }}>
+                      <ListItemText
+                        primary="Survey fee:"
+                        sx={{ color: 'text.secondary' }}
+                      />
+                      <ListItemText
+                        sx={{ textAlign: 'right', color: 'text.secondary' }}
+                        primary={orderInModal.order.surveyFee}
+                      />
+                    </ListItem>
+                    <ListItem sx={{ padding: '0px !important' }}>
+                      <ListItemText
+                        primary="Engineering supervision fee:"
+                        sx={{ color: 'text.secondary' }}
+                      />
+                      <ListItemText
+                        sx={{ textAlign: 'right', color: 'text.secondary' }}
+                        primary={orderInModal.order.engineeringSupervisionFee}
+                      />
+                    </ListItem>
+                    <hr />
+                    <ListItem sx={{ padding: '0px !important' }}>
+                      <ListItemText
+                        primary="Discount:"
+                        sx={{ color: 'text.secondary' }}
+                      />
+                      <ListItemText
+                        sx={{ textAlign: 'right', color: 'text.secondary' }}
+                        primary={orderInModal.order.discount}
+                      />
+                    </ListItem>
+                    <ListItem sx={{ padding: '0px !important' }}>
+                      <ListItemText
+                        primary="Total Estimated Price:"
+                        sx={{ fontWeight: '900' }}
+                      />
+                      <ListItemText
+                        sx={{ textAlign: 'right', fontWeight: '900' }}
+                        primary={
+                          <NumberFormat
+                            value={Math.trunc(orderInModal.order.totalEstimatedPrice)}
+                            displayType="text"
+                            thousandSeparator={true}
+                            prefix="# "
+                          />
+                        }
+                      />
+                    </ListItem>
+                  </List>
+                  <p>This This is a summary of your order. You can speak to an agent if you require further assistance.</p>
+                </CardContent>
+
+                <CardActions
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    px: "10px",
+                    pb: '10px'
+                  }}
+                >
+                  <Stack direction="row" sx={{ width: "100%" }}>
+                    <LoadingButton sx={{
+                      padding: "10px 30px",
+                      marginRight: "10px"
+                    }} fullWidth variant="contained" color="neutral"
+                      onClick={handlePayment}
+                      loading={makingPayment}
+                    >
+                      Proceed to Payment
+                    </LoadingButton>
+                    <Button variant="contained" color="primary">
+                      <PhoneIcon fontSize="medium" />
+                    </Button>
+                  </Stack>
+                </CardActions>
+
+
+              </Card>
+            )
+          }
+
+        </Fade>
+      </Modal>
+    )
+    // }
+  }
+
 
 
   const PaymentTypeModal = (
@@ -503,7 +812,7 @@ export default function HomePage() {
               <CardContent sx={{ px: { lg: "50px", md: "50px", sm: "30px", xs: "50px 10px" } }}>
                 <FormControl component="fieldset">
                   <RadioGroup
-                    onChange={(e) => setFormState((prev) => ({ ...prev, paymentMethod: e.target.value }))}
+                    onChange={(e) => setFormState((prev) => ({ ...prev, paymentMethod: e.target.value as 'instalmentPayment' | 'fullPayment' }))}
                     aria-label="payment"
                     name="paymentMethod"
                   >
@@ -818,7 +1127,7 @@ export default function HomePage() {
       </Box>
       {GetEstimateModal}
       {PaymentTypeModal}
-      {InvoiceModal}
+      {InvoiceModal()}
     </AppLayout>
   );
 }

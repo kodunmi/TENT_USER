@@ -1,6 +1,6 @@
 import { Divider, InputAdornment, Stack, TextField,Grid, Typography, Theme, IconButton, Slide, useMediaQuery, useTheme } from "@mui/material";
 import { Box } from "@mui/system";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { withTheme } from "@mui/styles";
 import styled from "styled-components";
 import { AppLayout } from "../../layout";
@@ -11,23 +11,35 @@ import { selectActiveNotification, selectAllNotifications, unsetActiveNotificati
 import ArrowLeft from "remixicon-react/ArrowLeftLineIcon";
 import { useAppDispatch } from "../../hooks";
 import { WithAuth } from "../../HOC";
+import { useGetNotificationsQuery } from "../../services";
+import { io } from "socket.io-client";
+import { NotificationEvents } from "../../lib";
+import moment from "moment";
+import Image from 'next/image'
 
 export interface NotificationType{
-    type: string,
     title: string,
     date: string,
-    sender: string,
-    read: boolean,
-    message: string,
+    receiver: string,
+    isRead: boolean,
+    body: string,
 }
 
+
+const socket = io('https://tent-group-server.herokuapp.com', {
+      query: {
+          token: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MTgyYmJlNmNlY2I1ZjAwMTZhNDMwMWIiLCJpYXQiOjE2NDQ4NDIzMjB9.Hzl1SZobio5FMCVu-sfdnp9ftOqYgxWPftezzyY9_Io`
+      }
+  });
 
 
 
 const Notifications = () => {
-  const nots = useSelector(selectAllNotifications) 
-  const active = useSelector(selectActiveNotification)
-  const dispatch = useAppDispatch()
+  // const nots = useSelector(selectAllNotifications) 
+  // const active = useSelector(selectActiveNotification)
+  // const dispatch = useAppDispatch()
+  const [active, setActive] = useState<NotificationType>()
+  const [nots, setNots] = useState<NotificationType[]>([])
   let booleanSlide = active ? true : false
   let MobileSlide = active ? false : true
   const theme = useTheme();
@@ -35,6 +47,37 @@ const Notifications = () => {
   const xs = useMediaQuery(theme.breakpoints.up("xs"));
   const lg = useMediaQuery(theme.breakpoints.up("lg"));
   const md = useMediaQuery(theme.breakpoints.up("md"));
+  const [page, setPage] = useState(1)
+
+  const {data, isLoading, isError} = useGetNotificationsQuery({page:page})
+
+  console.log(data);
+
+  useEffect(() => {
+
+    const pagination = {
+      pageNumber: 1
+  }
+
+    socket.on('connect', () => {
+      console.log('connected');
+      socket.emit(NotificationEvents.GetAllNotifications, pagination, (data: {data:{notificationCount:number,notifications: Array<NotificationType>,page:number, pages:number } } ) =>{
+          console.log(data.data);
+
+          setNots(data.data.notifications)
+      })
+    });
+
+    socket.on(NotificationEvents.NewNotification, (not: any) => {
+      console.log(not);
+    });
+
+
+    socket.on('disconnect', () => {
+      console.log('disconnected');
+    });
+  }, [])
+  
 
   const SGrid = withTheme(styled(Grid)`
   transition: all 1s ease-out;
@@ -78,35 +121,35 @@ const Notifications = () => {
             <Grid display={{sm:(active ? "none" : "block"),xs:(active ? "none" : "block"),md:"block",lg:"block"}} md={5} sm={12} xs={12} lg={5} item>
                 <Box sx={{ height: "calc(100vh - 100px)", overflow: "scroll"}}>
                    {
-                    nots.map((not:NotificationType)=><NotificationCard key={`a-${not.title}`} {...not}/>)
-                } 
+                    nots.map((not:NotificationType)=><NotificationCard handleClick={setActive} key={`a-${not.title}`} notification={not}/>)
+                   }
                 </Box>
                 
             </Grid>
             </Slide>
             <Slide direction="left" in={lg || md ? true : booleanSlide} mountOnEnter unmountOnExit>
-            <Grid  md={7} sm={12} xs={12} lg={7} item>
+            <Grid  sx={{ mt: {xs: '0px !important'} }} mt={0} md={7} sm={12} xs={12} lg={7} item>
               {
                 active ? 
                 <React.Fragment>
-                  <IconButton onClick={()=> dispatch(unsetActiveNotification())}>
+                  <IconButton onClick={()=> setActive(undefined)}>
                     <ArrowLeft/>
                   </IconButton>
-                  <NotificationCard {...active}/>
+                  <NotificationCard notification={active}/>
 
                   <Box px={5}>
                     <Typography variant="body1">
-                      {active.sender}
+                     From tent group
                     </Typography>
                     <Typography variant="caption">
-                      {active.date}
+                      {moment( active.date).format("MMMM Do YYYY")}
                     </Typography>
-                    <Typography mt={4} variant="body1">
-                      {active.message}
+                    <Typography dangerouslySetInnerHTML={{ __html: active.body }} mt={4} variant="body1">
+                      
                     </Typography>
                   </Box>
                 </React.Fragment>
-                : "select a not"
+                : <Image src="/images/no-mail.svg" alt="me" width="100px" height="100px" />
               }
             </Grid>
             {/* <div>
