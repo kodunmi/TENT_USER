@@ -9,7 +9,7 @@ export default function isDev(): boolean
 
 export const BaseUrl = isDev ? "https://tent-group-server.herokuapp.com/api/v1/" : "https://tent-group-server.herokuapp.com/api/v1"
 
-export const FrontendUrl = isDev ? "http://localhost:3000/" : "https://tent-user.herokuapp.com/"
+export const FrontendUrl = isDev ? "https://tent-user.herokuapp.com/" : "https://tent-user.herokuapp.com/"
 
 export enum NotificationEvents {
     GetAllNotifications = 'my-notifications',
