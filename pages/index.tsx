@@ -882,12 +882,13 @@ export default function HomePage() {
             isLoading ? <TentSpinner /> : (
               <form onSubmit={handleSubmit}>
                 <CardContent sx={{ px: { lg: "50px", md: "50px", sm: "30px", xs: "50px 10px" } }}>
-                  <Stack spacing={4}>
+                  <Stack >
                     <TextField
                       required
                       onChange={handleEstateChange}
                       name="estateId"
                       type="select"
+                      label="Select Estate"
                       select
                       sx={{
                         border: "none",
@@ -902,10 +903,14 @@ export default function HomePage() {
                         ),
                       }}
                     >
+                      {/* <MenuItem selected>Select a location</MenuItem> */}
                       {
                         error ? <p>Error</p> : isLoading ? <MenuItem>Loading...</MenuItem> : data.data.map(fac => <MenuItem key={`e-${fac._id}`} value={fac._id} >{fac.estateName}</MenuItem>)
                       }
                     </TextField>
+                    <Typography mb={4} variant="caption" color="textSecondary" component="p">
+                      Select the estate you want to get an estimate for.
+                    </Typography>
                     <Stack direction="row" spacing={2}>
                       <Grid item lg={6} sm={6} md={6} xs={6}>
                         <TextField
@@ -913,8 +918,9 @@ export default function HomePage() {
                           required
                           name="landSize"
                           type="number"
-                          placeholder="Size"
+                          placeholder="Set a Size"
                           fullWidth
+                          label="Land Size"
                           sx={{
                             border: "none",
                             backgroundColor: "action.hover",
@@ -926,8 +932,18 @@ export default function HomePage() {
                                 <SizeIcon />
                               </InputAdornment>
                             ),
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <Typography variant="caption">
+                                  Sqm
+                                </Typography>
+                              </InputAdornment>
+                            ),
                           }}
                         />
+                        <Typography variant="caption" color="textSecondary" component="p">
+                          Size is square meters.
+                      </Typography>
                       </Grid>
                       <Grid item lg={6} sm={6} md={6} xs={6}>
                         <TextField
@@ -935,6 +951,7 @@ export default function HomePage() {
                           name="buildingTypeId"
                           select
                           fullWidth
+                          label="Building Type"
                           sx={{
                             border: "none",
                             backgroundColor: "action.hover",
@@ -952,6 +969,9 @@ export default function HomePage() {
                             building.map(building => <MenuItem key={`c-${building._id}`} value={building._id} >{building.buildingType}</MenuItem>)
                           }
                         </TextField>
+                        <Typography variant="caption" color="textSecondary" component="p">
+                          Select if you want building
+                        </Typography>
                       </Grid>
                     </Stack>
                   </Stack>
