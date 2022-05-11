@@ -20,6 +20,7 @@ import PhoneIcon from '@mui/icons-material/PhoneCallbackTwoTone';
 import Home from 'remixicon-react/Home5LineIcon'
 import NumberFormat from "react-number-format";
 import moment from "moment";
+import { WithAuth } from "../HOC";
 
 
 const Bg = styled.div`
@@ -126,7 +127,7 @@ const PaymentCard = styled.div`
 
 
 
-export default function HomePage() {
+const  HomePage = () => {
   const formRef = useRef<HTMLFormElement>(null);
   const [open, setOpen] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
@@ -1151,3 +1152,5 @@ export default function HomePage() {
     </AppLayout>
   );
 }
+
+export default WithAuth(HomePage);

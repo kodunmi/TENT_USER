@@ -100,7 +100,8 @@ export const SideDrawer = ({handleOpenDrawer, handleCloseDrawer, openDrawer}:Dra
           role="presentation"
           onClick={handleCloseDrawer}
           onKeyDown={handleCloseDrawer}
-        >
+        >{
+          user.user &&
           <StyledList>
             <UserInfoCard alignItems="flex-start">
               <Stack spacing={2} direction="row" sx={{ alignItems: "center" }}>
@@ -147,6 +148,8 @@ export const SideDrawer = ({handleOpenDrawer, handleCloseDrawer, openDrawer}:Dra
               <ListItemText primary="Logout" />
             </DrawerFooter>
           </StyledList>
+        }
+          
         </Box>
       );
     return (
