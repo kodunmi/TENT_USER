@@ -112,15 +112,15 @@ export const SideDrawer = ({handleOpenDrawer, handleCloseDrawer, openDrawer}:Dra
                   <Avatar
                     sx={{ width: 56, height: 56, border: "3px solid white"}}
                     alt="Remy Sharp"
-                    src={user.profileImage}
+                    src={user.user.profileImage}
                   />
                 </StyledBadge>
                 <Stack>
                   <Typography variant="body1" color="white">
-                    {`${user.fullName}`}
+                    {`${user.user.fullName}`}
                   </Typography>
                   <Typography variant="caption" color="#A05F21">
-                    {user.phoneNumber}
+                    {user.user.phoneNumber}
                   </Typography>
                 </Stack>
               </Stack>
@@ -131,7 +131,7 @@ export const SideDrawer = ({handleOpenDrawer, handleCloseDrawer, openDrawer}:Dra
                   alignItems="flex-end"
                   button
                   key={menu.route}
-                  secondaryAction={menu.countable ? <MenuCount>{ menu.route === "/notifications" ? 12 : menu.route == "/orders" ? !error && !isLoading && data.data.myOrderCount : 6} </MenuCount> : menu.route === "/profile" ? user.profileVerified ? <Activation background="green">ACTIVATED</Activation>:<Activation background="red">UNACTIVATED</Activation> : ""}
+                  secondaryAction={menu.countable ? <MenuCount>{ menu.route === "/notifications" ? 12 : menu.route == "/orders" ? !error && !isLoading && data.data.myOrderCount : 6} </MenuCount> : menu.route === "/profile" ? user.user.profileVerified ? <Activation background="green">ACTIVATED</Activation>:<Activation background="red">UNACTIVATED</Activation> : ""}
                 >
                   <ListItemIcon>
                     <menu.icon color="#EACA1F" />

@@ -62,7 +62,7 @@ export function NavBar({onclick}) {
               </Badge>
             </IconButton>
 
-            <Avatar src={user.profileImage} style={{ cursor: "pointer" }} onClick={()=> router.push('/profile')} />
+            <Avatar src={user.user.profileImage} style={{ cursor: "pointer" }} onClick={()=> router.push('/profile')} />
           </Box>
 
           <Box pl={2} sx={{ display: { xs: "none", md: "block" } }}>
@@ -73,7 +73,7 @@ export function NavBar({onclick}) {
                   variant="subtitle1"
                   component="p"
                 >
-                   {user.fullName}
+                   {user.user.fullName}
                 </Typography>
               </Grid>
               <Grid md={12} item>
@@ -82,7 +82,7 @@ export function NavBar({onclick}) {
                   variant="overline"
                   component="p"
                 >
-                  {user.tentUserId}
+                  {user.user.tentUserId}
                 </Typography>
               </Grid>
             </Grid>

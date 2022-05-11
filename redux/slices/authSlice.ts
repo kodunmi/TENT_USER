@@ -37,4 +37,4 @@ export const { setCredentials, setProfilePicture, setProfile } = slice.actions
 
 export default slice.reducer
 
-export const selectCurrentUser = (state: RootState) => state.auth.user
+export const selectCurrentUser = (state: RootState) => state.auth

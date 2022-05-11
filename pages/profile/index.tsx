@@ -34,7 +34,7 @@ import { WithAuth } from "../../HOC";
 const Profile = () => {
   const { user } = useAuth()
   const handleOpen = () => setOpen(true);
-  const [phone, setPhone] = useState(user.phoneNumber)
+  const [phone, setPhone] = useState(user.user.phoneNumber)
   const handleClose = () => setOpen(false);
   const [open, setOpen] = useState(false);
   const formRef = React.useRef<HTMLFormElement>(null);
@@ -73,7 +73,7 @@ const Profile = () => {
 
 
 
-  const [formState, setFormState] = React.useState<UserDataType>(user)
+  const [formState, setFormState] = React.useState<UserDataType>(user.user)
 
 
   const Input = styled('input')({
@@ -180,7 +180,7 @@ const Profile = () => {
 
 
   const openVerifyPhoneMailModal = () => {
-    if (user.phoneNumber !== phone) {
+    if (user.user.phoneNumber !== phone) {
       // alert("Are you sure you want to change")
       setOpen(false)
       confirmAlert({
@@ -206,7 +206,7 @@ const Profile = () => {
 
   const handleVerifyPhone = async () => {
     try {
-      const response = await verifyPhoneMutation({phoneNumber: user.phoneNumber, otp:code}).unwrap()
+      const response = await verifyPhoneMutation({phoneNumber: user.user.phoneNumber, otp:code}).unwrap()
 
       dispatch(setProfile(response.data))
 
@@ -298,7 +298,7 @@ const Profile = () => {
 
       try {
 
-        if (!user.profileVerified) {
+        if (!user.user.profileVerified) {
           res = await buildProfile(buildProfileData).unwrap()
         } else {
           res = await editProfile(editProfileData).unwrap()
@@ -531,7 +531,7 @@ const Profile = () => {
 
 
                   <Avatar
-                    src={preview ? preview : user.profileImage}
+                    src={preview ? preview : user.user.profileImage}
                     sx={{
                       width: "100px",
                       height: "100px",
@@ -546,14 +546,14 @@ const Profile = () => {
             </Stack>
 
             <Stack>
-              <Typography variant="h4">{user.fullName}</Typography>
-              <Typography variant="body1">{user.tentUserId}</Typography>
+              <Typography variant="h4">{user.user.fullName}</Typography>
+              <Typography variant="body1">{user.user.tentUserId}</Typography>
             </Stack>
           </Stack>
           <Stack direction="row" spacing={2}>
             <LoadingButton
               loading={sendingMail}
-              disabled={user.phoneNumberVerified}
+              disabled={user.user.phoneNumberVerified}
               onClick={() => setOpen(true)}
               sx={{
 
@@ -566,7 +566,7 @@ const Profile = () => {
               variant="contained"
               size="small"
             >
-              {user.phoneNumberVerified ? "VERIFIED" : "VERIFY PHONE"}
+              {user.user.phoneNumberVerified ? "VERIFIED" : "VERIFY PHONE"}
             </LoadingButton>
             <Button
               sx={{
@@ -580,7 +580,7 @@ const Profile = () => {
               variant="contained"
               size="small"
             >
-              {user.profileVerified ? "VERIFIED" : "UNVERIFIED"}
+              {user.user.profileVerified ? "VERIFIED" : "UNVERIFIED"}
             </Button>
           </Stack>
 
