@@ -113,6 +113,7 @@ const Register = () => {
                         <TextField
                             onChange={handleChange}
                             required
+                            error={formState.phoneNumber.match('') === null}
                             variant="outlined"
                             sx={{
                                 border: "none",
@@ -125,7 +126,7 @@ const Register = () => {
                             placeholder="enter phone number"
                             fullWidth
                             inputProps={{
-                                pattern:"[0-9]{11}",
+                                // pattern:"[0-9]{11}",
                                 startAdornment: (
                                     <InputAdornment position="start">
                                         <User />

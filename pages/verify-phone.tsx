@@ -5,13 +5,13 @@ import { AuthLayout } from '../layout'
 import Link from 'next/link'
 // import ReactPinField from "react-pin-field"
 import styled from 'styled-components'
-import { useRequestPhoneVerificationMutation, useResendVerificationMailMutation, useVerifyMailMutation } from '../services'
+import { useResendVerificationMailMutation, useVerifyMailMutation, useVerifyPhoneMutation } from '../services'
 import { useRouter } from 'next/router'
 import { useSnackbar } from 'notistack'
 import { LoadingButton } from '@mui/lab'
-import { setCredentials } from '../redux'
+import { setCredentials, setProfile } from '../redux'
 import { AuthUserDataType } from '../lib'
-import { useAppDispatch } from '../hooks'
+import { useAppDispatch, useAuth } from '../hooks'
 import PinInput from 'react-pin-input';
 
 // const ReactPinField = React.lazy(() => import("react-pin-field"));
@@ -52,14 +52,13 @@ const Input = styled(PinInput)`
 }
 `
 
-const VerifyEmail = () => {
+const VerifyPhone = () => {
 
     const [pinComplete, setPinComplete] = useState(false)
     const [pin, setPin] = useState('')
-    const [verify, { isLoading }] = useVerifyMailMutation()
-    const [resendMail, { isLoading: sendingMail }] = useResendVerificationMailMutation()
-    const [sendOtpToPhone, { isLoading: sendingOTP }] = useRequestPhoneVerificationMutation()
+    const { user } = useAuth()
 
+    const [verifyPhoneMutation, { isLoading }] = useVerifyPhoneMutation()
     const router = useRouter()
     const { email } = router.query
     const { enqueueSnackbar } = useSnackbar();
@@ -74,27 +73,18 @@ const VerifyEmail = () => {
 
     }, [pin])
 
-    const verifyEmail = async () => {
+    const verifyPhone = async () => {
 
         try {
-            const res = await verify({ email, otp: pin }).unwrap()
-            console.log(res);
+            const response = await verifyPhoneMutation({phoneNumber: user.user.phoneNumber, otp:pin}).unwrap()
 
-            dispatch(setCredentials(res.data as AuthUserDataType))
-
-            let userData = res.data as AuthUserDataType
-
-            let phoneNumber = userData.user.phoneNumber
-
-            let phoneWithCountryCode = `+234${phoneNumber.substring(1)}`
-
-            await sendOtpToPhone(phoneWithCountryCode).unwrap()
-
-            enqueueSnackbar(res.message ? res.message : "We could not process your request", {
-                variant: 'success'
+            dispatch(setProfile(response.data))
+      
+            enqueueSnackbar('phone number verified', {
+              variant: 'success'
             });
 
-            push('/verify-phone')
+            push('/profile')
 
         } catch (err) {
             console.log(err);
@@ -104,21 +94,6 @@ const VerifyEmail = () => {
         }
     }
 
-    const resendMailFunc = async () => {
-        try {
-            const res = await resendMail({ email: email }).unwrap()
-            console.log(res)
-            enqueueSnackbar(res.data ? res.data : "We could not process your request", {
-                variant: 'success'
-            });
-
-        } catch (err) {
-            console.log(err);
-            enqueueSnackbar(err.data ? err.data.message : "We could not process your request", {
-                variant: 'warning'
-            });
-        }
-    }
     return (
         <AuthLayout>
             <Box style={{ position: "relative" }}>
@@ -129,7 +104,7 @@ const VerifyEmail = () => {
                         <b>Verification</b>
                     </Typography>
                     <Typography component="div" mb={6} variant="caption">
-                        Please enter the verification code we sent to your email
+                        Please enter the verification code we sent to your phone
                     </Typography>
 
                     {/* <Input
@@ -155,16 +130,16 @@ const VerifyEmail = () => {
                     />
 
 
-                    <LoadingButton loading={isLoading} onClick={verifyEmail} sx={{ mt: "100px" }} disabled={!pinComplete} fullWidth size="large" color="neutral" variant="contained">
+                    <LoadingButton loading={isLoading} onClick={verifyPhone} sx={{ mt: "100px" }} disabled={!pinComplete} fullWidth size="large" color="neutral" variant="contained">
                         Verify
                     </LoadingButton>
-                    <Typography align="center" component="div" mt={3} variant="caption">
+                    {/* <Typography align="center" component="div" mt={3} variant="caption">
                         I didn’t receive code, <Button variant="text" onClick={resendMailFunc}>Resend</Button>
-                    </Typography>
+                    </Typography> */}
                 </Box>
             </Box>
         </AuthLayout>
     )
 }
 
-export default VerifyEmail
+export default VerifyPhone

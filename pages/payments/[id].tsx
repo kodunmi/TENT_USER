@@ -366,7 +366,7 @@ const SinglePage = ({params}:{params: ParsedUrlQuery}) => {
                                             Third Installment
                                         </Typography>
                                         {
-                                            result.data.data.instalmentPayment.numOfPaymentMade === 3 ? (
+                                            result.data.data.instalmentPayment.numOfPaymentMade === 2 ? (
                                                 <Button fullWidth sx={{ borderRadius: '20px', marginTop: '20px' }} color="neutral" variant="contained">
                                                     Pay Now
                                                 </Button>

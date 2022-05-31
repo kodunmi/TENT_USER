@@ -312,8 +312,8 @@ const  HomePage = () => {
                         </div>
 
                         <div>
-                          <h3 style={{ marginTop: "0px", marginBottom: "0px" }}>1,200sqm of Land</h3>
-                          <p style={{ marginTop: "0px", fontSize: "16.087px", color: '#788190' }}>Diplomatic Hill Est. Bwari - Kaduna Ex...</p>
+                          <h3 style={{ marginTop: "0px", marginBottom: "0px" }}>{orderInModal.landSize}sqm of Land</h3>
+                          <p style={{ marginTop: "0px", fontSize: "16.087px", color: '#788190' }}>{orderInModal.estateName}</p>
                         </div>
                       </div>
                       <div style={{ display: 'flex', justifyContent: "space-between", marginLeft: "40px" }}>
@@ -591,8 +591,8 @@ const  HomePage = () => {
                       </div>
 
                       <div>
-                        <h3 style={{ marginTop: "0px", marginBottom: "0px" }}>1,200sqm of Land</h3>
-                        <p style={{ marginTop: "0px", fontSize: "16.087px", color: '#788190' }}>Diplomatic Hill Est. Bwari - Kaduna Ex...</p>
+                        <h3 style={{ marginTop: "0px", marginBottom: "0px" }}>{orderInModal.order.landSize}sqm of Land</h3>
+                        <p style={{ marginTop: "0px", fontSize: "16.087px", color: '#788190' }}>{orderInModal.order.estateName}</p>
                       </div>
                     </div>
                     <div style={{ display: 'flex', justifyContent: "space-between", marginLeft: "40px" }}>
@@ -916,6 +916,7 @@ const  HomePage = () => {
                       <Grid item lg={6} sm={6} md={6} xs={6}>
                         <TextField
                           onChange={handleChange}
+                          select
                           required
                           name="landSize"
                           type="number"
@@ -941,7 +942,14 @@ const  HomePage = () => {
                               </InputAdornment>
                             ),
                           }}
-                        />
+                        >
+                          
+                            <MenuItem selected>Select a size</MenuItem>
+                            <MenuItem value={10}>300</MenuItem>
+                            <MenuItem value={20}>500</MenuItem>
+                            <MenuItem value={30}>750</MenuItem>
+                            <MenuItem value={40}>1000</MenuItem>  
+                        </TextField>
                         <Typography variant="caption" color="textSecondary" component="p">
                           Size is square meters.
                       </Typography>

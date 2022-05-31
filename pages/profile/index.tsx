@@ -149,7 +149,7 @@ const Profile = () => {
       
       dispatch(setProfile(res.data))
 
-      sendVerifyPhoneMail()
+      sendVerifyPhone()
 
     } catch (err) {
       enqueueSnackbar(err.data ? err.data.message : "We could not process your request", {
@@ -158,7 +158,7 @@ const Profile = () => {
     }
   }
 
-  const sendVerifyPhoneMail = async () => {
+  const sendVerifyPhone = async () => {
     try {
       console.log(phone);
       const response = await sendVerifyPhoneMailMutation(phone).unwrap()
@@ -193,7 +193,7 @@ const Profile = () => {
           },
           {
             label: 'No',
-            onClick: () => sendVerifyPhoneMail()
+            onClick: () => sendVerifyPhone()
           }
         ]
       });
@@ -201,7 +201,7 @@ const Profile = () => {
       return
     }
 
-    sendVerifyPhoneMail()
+    sendVerifyPhone()
   }
 
   const handleVerifyPhone = async () => {
