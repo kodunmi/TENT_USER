@@ -17,21 +17,21 @@
 //     [prefersDarkMode],
 //   );
 
-//   export default theme;
+//   export defaultt theme;
 
-import { createTheme } from '@mui/material/styles';
-import { red } from '@mui/material/colors';
+import { createTheme } from "@mui/material/styles";
+import { red } from "@mui/material/colors";
 
 let prefersDarkMode = false;
 // Create a theme instance.
 const theme = createTheme({
   palette: {
-      mode: prefersDarkMode ? 'dark' : 'light',
-      neutral: {
-        main: prefersDarkMode? '#EACA1F' : '#161616',
-        contrastText: prefersDarkMode? '#161616' : '#EACA1F',
-      },
+    mode: prefersDarkMode ? "dark" : "light",
+    neutral: {
+      main: prefersDarkMode ? "#EACA1F" : "#161616",
+      contrastText: prefersDarkMode ? "#161616" : "#EACA1F",
     },
+  },
 });
 
 export default theme;
