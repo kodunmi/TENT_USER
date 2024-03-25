@@ -21,223 +21,247 @@ import { TentTextField, uploadFile } from "../../components";
 import { useAppDispatch, useAuth } from "../../hooks";
 import { AppLayout } from "../../layout";
 import { BaseResponse, statesOfNigeria, UserDataType } from "../../lib";
-import { BuildProjectRequest, useBuildProfileMutation, useEditProfileMutation, useRequestPhoneVerificationMutation, useVerifyPhoneMutation } from '../../services'
-import { styled } from '@mui/material/styles';
+import {
+  BuildProjectRequest,
+  useBuildProfileMutation,
+  useEditProfileMutation,
+  useRequestPhoneVerificationMutation,
+  useVerifyPhoneMutation,
+} from "../../services";
+import { styled } from "@mui/material/styles";
 import { setCredentials, setProfile, setProfilePicture } from "../../redux";
-import { LoadingButton } from '@mui/lab';
-import CircularProgress from '@mui/material/CircularProgress';
-import moment from 'moment';
-import { confirmAlert } from 'react-confirm-alert'; // Import
-import ReactPhoneInput from 'react-phone-input-mui';
+import { LoadingButton } from "@mui/lab";
+import CircularProgress from "@mui/material/CircularProgress";
+import moment from "moment";
+import { confirmAlert } from "react-confirm-alert"; // Import
+import ReactPhoneInput from "react-phone-input-mui";
 import { WithAuth } from "../../HOC";
 
 const Profile = () => {
-  const { user } = useAuth()
+  const { user } = useAuth();
   const handleOpen = () => setOpen(true);
-  const [phone, setPhone] = useState(user.user.phoneNumber)
+  const [phone, setPhone] = useState(user.user.phoneNumber);
   const handleClose = () => setOpen(false);
   const [open, setOpen] = useState(false);
   const formRef = React.useRef<HTMLFormElement>(null);
-  const [buildProfile, { isLoading }] = useBuildProfileMutation()
-  const [editProfile, { isLoading: isEditing }] = useEditProfileMutation()
-  const [sendVerifyPhoneMailMutation, { isLoading: sendingMail }] = useRequestPhoneVerificationMutation()
-  const [verifyPhoneMutation, { isLoading: verifyingPhone }] = useVerifyPhoneMutation()
-  const [selectedFile, setSelectedFile] = useState()
-  const [preview, setPreview] = useState<string | undefined>()
+  const [buildProfile, { isLoading }] = useBuildProfileMutation();
+  const [editProfile, { isLoading: isEditing }] = useEditProfileMutation();
+  const [sendVerifyPhoneMailMutation, { isLoading: sendingMail }] =
+    useRequestPhoneVerificationMutation();
+  const [verifyPhoneMutation, { isLoading: verifyingPhone }] =
+    useVerifyPhoneMutation();
+  const [selectedFile, setSelectedFile] = useState();
+  const [preview, setPreview] = useState<string | undefined>();
   const { enqueueSnackbar } = useSnackbar();
-  const [uploadingImage, setUploadingImage] = useState(false)
-  const dispatch = useAppDispatch()
-  const [code, setCode] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const dispatch = useAppDispatch();
+  const [code, setCode] = useState("");
   const [openVerifyModal, setOpenVerifyModal] = useState(false);
   const handleChange2 = ({
     target: { name, value },
   }: React.ChangeEvent<HTMLInputElement>) =>
-    setFormState((prev) => ({ ...prev, [name]: value }))
+    setFormState((prev) => ({ ...prev, [name]: value }));
 
   const handleChange = ({
     target: { name, value },
   }: React.ChangeEvent<HTMLInputElement>) => {
-
-    const split = name.split('.')
+    const split = name.split(".");
     if (split.length > 1) {
       setFormState((prev) => ({
-        ...prev, [split[0]]: {
+        ...prev,
+        [split[0]]: {
           ...prev[split[0]],
-          [split[1]]: value
-        }
-      }))
+          [split[1]]: value,
+        },
+      }));
     } else {
-      setFormState((prev) => ({ ...prev, [name]: value }))
+      setFormState((prev) => ({ ...prev, [name]: value }));
     }
-  }
+  };
 
+  const [formState, setFormState] = React.useState<UserDataType>(user.user);
 
-
-  const [formState, setFormState] = React.useState<UserDataType>(user.user)
-
-
-  const Input = styled('input')({
-    display: 'none',
+  const Input = styled("input")({
+    display: "none",
   });
 
   // useEffect(() => {
   //   setPreview(user.profileImage)
   // }, [user.profileImage])
 
-
   useEffect(() => {
     if (!selectedFile) {
-      setPreview(undefined)
-      return
+      setPreview(undefined);
+      return;
     }
 
-    const objectUrl = URL.createObjectURL(selectedFile)
-    setPreview(objectUrl)
+    const objectUrl = URL.createObjectURL(selectedFile);
+    setPreview(objectUrl);
 
     // free memory when ever this component is unmounted
-    return () => URL.revokeObjectURL(objectUrl)
-  }, [selectedFile])
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [selectedFile]);
 
-
-  const onSelectFile = e => {
+  const onSelectFile = (e) => {
     if (!e.target.files || e.target.files.length === 0) {
-      setSelectedFile(undefined)
-      return
+      setSelectedFile(undefined);
+      return;
     }
 
     // I've kept this example simple by using the first image instead of multiple
-    setSelectedFile(e.target.files[0])
-    setUploadingImage(true)
+    setSelectedFile(e.target.files[0]);
+    setUploadingImage(true);
 
-    uploadFile([{
-      file: e.target.files[0],
-      name: "mmcsmsfs"
-    }]).then((data: BaseResponse<Array<{ fileSize: number, mimeType: string, name: string, fileFormat: string, publicId: string, url: string }>>) => {
+    uploadFile([
+      {
+        file: e.target.files[0],
+        name: "mmcsmsfs",
+      },
+    ])
+      .then(
+        (
+          data: BaseResponse<
+            Array<{
+              fileSize: number;
+              mimeType: string;
+              name: string;
+              fileFormat: string;
+              publicId: string;
+              url: string;
+            }>
+          >
+        ) => {
+          dispatch(setProfilePicture({ url: data.data[0].url }));
 
+          setFormState({
+            profileImage: data.data[0].url,
+          });
 
-      dispatch(setProfilePicture({ url: data.data[0].url }))
+          enqueueSnackbar("image upload completed", {
+            variant: "success",
+          });
 
-      enqueueSnackbar("image upload completed", {
-        variant: 'success'
+          return data.data[0].url;
+        }
+      )
+      .then((data: string) => {
+        editProfile({ profileImage: data }).unwrap();
+
+        enqueueSnackbar("profile updated successfully", {
+          variant: "success",
+        });
+      })
+      .catch((err) =>
+        enqueueSnackbar(
+          err.data ? err.data.message : "We could not process your request",
+          {
+            variant: "warning",
+          }
+        )
+      )
+      .finally(() => {
+        setUploadingImage(false);
       });
-
-
-
-      return data.data[0].url
-
-    }).then((data: string) => {
-
-      editProfile({ profileImage: data }).unwrap()
-
-      enqueueSnackbar("profile updated successfully", {
-        variant: 'success'
-      });
-
-    }).catch(err => enqueueSnackbar(err.data ? err.data.message : "We could not process your request", {
-      variant: 'warning'
-    })).finally(() => {
-      setUploadingImage(false)
-    })
-
-  }
+  };
 
   const updatePhoneAndSendMessage = async () => {
     try {
-      const res = await editProfile({ phoneNumber: phone }).unwrap()
+      const res = await editProfile({ phoneNumber: phone }).unwrap();
 
       console.log(res);
-      
-      dispatch(setProfile(res.data))
 
-      sendVerifyPhone()
+      dispatch(setProfile(res.data));
 
+      sendVerifyPhone();
     } catch (err) {
-      enqueueSnackbar(err.data ? err.data.message : "We could not process your request", {
-        variant: 'warning'
-      });
+      enqueueSnackbar(
+        err.data ? err.data.message : "We could not process your request",
+        {
+          variant: "warning",
+        }
+      );
     }
-  }
+  };
 
   const sendVerifyPhone = async () => {
     try {
       console.log(phone);
-      const response = await sendVerifyPhoneMailMutation(phone).unwrap()
-      
+      const response = await sendVerifyPhoneMailMutation(phone).unwrap();
 
       enqueueSnackbar(response.data, {
-        variant: 'success'
+        variant: "success",
       });
 
-      setOpenVerifyModal(true)
-
-
+      setOpenVerifyModal(true);
     } catch (err) {
-      enqueueSnackbar(err.data ? err.data.message : "We could not process your request", {
-        variant: 'warning'
-      });
+      enqueueSnackbar(
+        err.data ? err.data.message : "We could not process your request",
+        {
+          variant: "warning",
+        }
+      );
     }
-  }
-
+  };
 
   const openVerifyPhoneMailModal = () => {
     if (user.user.phoneNumber !== phone) {
       // alert("Are you sure you want to change")
-      setOpen(false)
+      setOpen(false);
       confirmAlert({
-        title: 'Confirm to submit',
-        message: 'Are you sure you want to change',
+        title: "Confirm to submit",
+        message: "Are you sure you want to change",
         buttons: [
           {
-            label: 'Yes',
-            onClick: () => updatePhoneAndSendMessage()
+            label: "Yes",
+            onClick: () => updatePhoneAndSendMessage(),
           },
           {
-            label: 'No',
-            onClick: () => sendVerifyPhone()
-          }
-        ]
+            label: "No",
+            onClick: () => sendVerifyPhone(),
+          },
+        ],
       });
 
-      return
+      return;
     }
 
-    sendVerifyPhone()
-  }
+    sendVerifyPhone();
+  };
 
   const handleVerifyPhone = async () => {
     try {
-      const response = await verifyPhoneMutation({phoneNumber: user.user.phoneNumber, otp:code}).unwrap()
+      const response = await verifyPhoneMutation({
+        phoneNumber: user.user.phoneNumber,
+        otp: code,
+      }).unwrap();
 
-      dispatch(setProfile(response.data))
+      dispatch(setProfile(response.data));
 
-      setOpenVerifyModal(false)
-      setOpen(false)
+      setOpenVerifyModal(false);
+      setOpen(false);
 
-      enqueueSnackbar('phone number verified', {
-        variant: 'success'
+      enqueueSnackbar("phone number verified", {
+        variant: "success",
       });
-      
-
     } catch (err) {
-      enqueueSnackbar(err.data ? err.data.message : "We could not process your request", {
-        variant: 'warning'
-      });
+      enqueueSnackbar(
+        err.data ? err.data.message : "We could not process your request",
+        {
+          variant: "warning",
+        }
+      );
     }
-  }
-
+  };
 
   const handleProfileUpdate = async (e) => {
+    let res: BaseResponse<UserDataType>;
 
-    let res: BaseResponse<UserDataType>
-
-
-    e.preventDefault()
+    e.preventDefault();
     if (formRef.current.reportValidity()) {
-
       const buildProfileData = {
         gender: formState.gender,
         dateOfBirth: formState.dateOfBirth,
-        profileImage: formState.profileImage,
+        profileImage: user.user.profileImage,
         stateOfOrigin: formState.stateOfOrigin,
         maritalStatus: formState.maritalStatus,
         occupation: formState.occupation,
@@ -260,14 +284,13 @@ const Profile = () => {
           city: formState.businessAddress.city,
           state: formState.businessAddress.state,
           zipCode: formState.businessAddress.zipCode,
-        }
-      }
+        },
+      };
 
       const editProfileData: BuildProjectRequest = {
-
         gender: formState.gender,
         dateOfBirth: formState.dateOfBirth,
-        profileImage: formState.profileImage,
+        profileImage: user.user.profileImage,
         stateOfOrigin: formState.stateOfOrigin,
         maritalStatus: formState.maritalStatus,
         occupation: formState.occupation,
@@ -293,30 +316,29 @@ const Profile = () => {
           city: formState.businessAddress.city,
           state: formState.businessAddress.state,
           zipCode: formState.businessAddress.zipCode,
-        }
-      }
+        },
+      };
 
       try {
-
         if (!user.user.profileVerified) {
-          res = await buildProfile(buildProfileData).unwrap()
+          res = await buildProfile(buildProfileData).unwrap();
         } else {
-          res = await editProfile(editProfileData).unwrap()
+          res = await editProfile(editProfileData).unwrap();
         }
 
-        dispatch(setProfile(res.data))
-
-
+        dispatch(setProfile(res.data));
       } catch (err) {
-        enqueueSnackbar(err.data ? err.data.message : "We could not process your request", {
-          variant: 'warning'
-        });
+        enqueueSnackbar(
+          err.data ? err.data.message : "We could not process your request",
+          {
+            variant: "warning",
+          }
+        );
       }
     }
 
-
-    console.log(formState)
-  }
+    console.log(formState);
+  };
 
   const VerifyPhoneModal = (
     <Modal
@@ -340,7 +362,7 @@ const Profile = () => {
             width: { lg: "500px", xs: "90%", sm: "70%", md: "500px" },
             bgcolor: "background.paper",
             boxShadow: 24,
-            borderRadius: "13px"
+            borderRadius: "13px",
           }}
         >
           <CardHeader
@@ -353,7 +375,11 @@ const Profile = () => {
           />
           {
             <form>
-              <CardContent sx={{ px: { lg: "50px", md: "50px", sm: "30px", xs: "50px 10px" } }}>
+              <CardContent
+                sx={{
+                  px: { lg: "50px", md: "50px", sm: "30px", xs: "50px 10px" },
+                }}
+              >
                 <p>Enter OTP</p>
                 <TentTextField
                   onChange={(e) => setCode(e.target.value)}
@@ -367,7 +393,6 @@ const Profile = () => {
                   name="fullName"
                   type="text"
                   placeholder="name"
-
                 />
                 {/* <ReactPhoneInput
                   value={phone}
@@ -386,18 +411,22 @@ const Profile = () => {
                 <LoadingButton
                   // loading={gettingEstimate}
                   sx={{
-                    padding: "15px 30px"
-                  }} fullWidth variant="contained" color="neutral" onClick={() => handleVerifyPhone()}>
+                    padding: "15px 30px",
+                  }}
+                  fullWidth
+                  variant="contained"
+                  color="neutral"
+                  onClick={() => handleVerifyPhone()}
+                >
                   Verify Phone
                 </LoadingButton>
               </CardActions>
             </form>
           }
-
         </Card>
       </Fade>
     </Modal>
-  )
+  );
 
   const PhoneVerificationModal = (
     <Modal
@@ -421,7 +450,7 @@ const Profile = () => {
             width: { lg: "500px", xs: "90%", sm: "70%", md: "500px" },
             bgcolor: "background.paper",
             boxShadow: 24,
-            borderRadius: "13px"
+            borderRadius: "13px",
           }}
         >
           <CardHeader
@@ -434,7 +463,11 @@ const Profile = () => {
           />
           {
             <form>
-              <CardContent sx={{ px: { lg: "50px", md: "50px", sm: "30px", xs: "50px 10px" } }}>
+              <CardContent
+                sx={{
+                  px: { lg: "50px", md: "50px", sm: "30px", xs: "50px 10px" },
+                }}
+              >
                 <p>Confirm your phone number</p>
                 <TentTextField
                   onChange={(e) => setPhone(e.target.value)}
@@ -448,13 +481,7 @@ const Profile = () => {
                   name="fullName"
                   type="text"
                   placeholder="name"
-
                 />
-                {/* <ReactPhoneInput
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)} // passed function receives the phone value
-                  component={TentTextField}
-                /> */}
               </CardContent>
               <CardActions
                 sx={{
@@ -465,28 +492,37 @@ const Profile = () => {
                 }}
               >
                 <LoadingButton
-                  // loading={gettingEstimate}
                   sx={{
-                    padding: "15px 30px"
-                  }} fullWidth variant="contained" color="neutral" onClick={() => openVerifyPhoneMailModal()}>
+                    padding: "15px 30px",
+                  }}
+                  fullWidth
+                  variant="contained"
+                  color="neutral"
+                  onClick={() => openVerifyPhoneMailModal()}
+                >
                   Send Otp
                 </LoadingButton>
               </CardActions>
             </form>
           }
-
         </Card>
       </Fade>
     </Modal>
-  )
-
+  );
 
   return (
     <AppLayout>
       <Box sx={{ padding: "10px 15px 50px 15px" }}>
         <Stack mb={1} direction="row" justifyContent="space-between">
           <Typography variant="h5">My Profile</Typography>
-          <LoadingButton loading={isLoading || isEditing} onClick={(e) => handleProfileUpdate(e)} variant="outlined" color="primary">Save and Continue</LoadingButton>
+          <LoadingButton
+            loading={isLoading || isEditing}
+            onClick={(e) => handleProfileUpdate(e)}
+            variant="outlined"
+            color="primary"
+          >
+            Save and Continue
+          </LoadingButton>
         </Stack>
         <Divider variant="middle" />
         <Stack
@@ -506,13 +542,18 @@ const Profile = () => {
               }}
             /> */}
               <label htmlFor="contained-button-file">
-                <Input accept="image/*" id="contained-button-file" multiple type="file" onChange={onSelectFile} />
-                <Box sx={{ m: 1, position: 'relative' }}>
+                <Input
+                  accept="image/*"
+                  id="contained-button-file"
+                  multiple
+                  type="file"
+                  onChange={onSelectFile}
+                />
+                <Box sx={{ m: 1, position: "relative" }}>
                   {uploadingImage && (
                     <Box
                       sx={{
-
-                        position: 'absolute',
+                        position: "absolute",
                         top: "50%",
                         left: "50%",
                         transform: "translate(-50%,-50%)",
@@ -523,12 +564,10 @@ const Profile = () => {
                         size={110}
                         sx={{
                           color: "#EACA1F",
-
                         }}
                       />
                     </Box>
                   )}
-
 
                   <Avatar
                     src={preview ? preview : user.user.profileImage}
@@ -540,8 +579,6 @@ const Profile = () => {
                     }}
                   />
                 </Box>
-
-
               </label>
             </Stack>
 
@@ -556,7 +593,6 @@ const Profile = () => {
               disabled={user.user.phoneNumberVerified}
               onClick={() => setOpen(true)}
               sx={{
-
                 boxShadow: "none",
                 borderRadius: "6px",
                 fontSize: "13px",
@@ -583,9 +619,19 @@ const Profile = () => {
               {user.user.profileVerified ? "VERIFIED" : "UNVERIFIED"}
             </Button>
           </Stack>
-
         </Stack>
-        <Box sx={{ height: { lg: "calc(100vh - 400px)", xs: "calc(100vh - 300px)", md: "calc(100vh - 400px)", sm: "calc(100vh - 300px)" }, overflow: "scroll" }}>
+        <Box
+          sx={{
+            height: {
+              lg: "calc(100vh - 400px)",
+              xs: "calc(100vh - 300px)",
+              md: "calc(100vh - 400px)",
+              sm: "calc(100vh - 300px)",
+            },
+            overflow: "scroll",
+            paddingBottom: "50px",
+          }}
+        >
           <Stack mt="42px">
             <form ref={formRef}>
               <Grid container spacing={3}>
@@ -645,7 +691,10 @@ const Profile = () => {
                             borderRadius: "5px",
                           }}
                           name="dateOfBirth"
-                          value={formState.dateOfBirth && moment(formState.dateOfBirth).format('YYYY-MM-DD')}
+                          value={
+                            formState.dateOfBirth &&
+                            moment(formState.dateOfBirth).format("YYYY-MM-DD")
+                          }
                           type="date"
                           placeholder="name"
                           label="Date of Birth"
@@ -669,13 +718,13 @@ const Profile = () => {
                           label="Gender"
                           fullWidth
                         >
-                          <MenuItem >Select gender</MenuItem>
+                          <MenuItem>Select gender</MenuItem>
                           <MenuItem value="female">Female</MenuItem>
                           <MenuItem value="male">Male</MenuItem>
                         </TentTextField>{" "}
                       </Grid>
                     </Stack>
-                    <TentTextField
+                    {/* <TentTextField
                       required
                       sx={{
                         border: "none",
@@ -687,7 +736,7 @@ const Profile = () => {
                       placeholder="password"
                       label="Password"
                       fullWidth
-                    />
+                    /> */}
                   </Stack>
                 </Grid>
                 <Grid lg={4} md={12} sm={12} xs={12} item>
@@ -700,7 +749,10 @@ const Profile = () => {
                         backgroundColor: "action.hover",
                         borderRadius: "5px",
                       }}
-                      value={formState.residentialAddress && formState.residentialAddress.address}
+                      value={
+                        formState.residentialAddress &&
+                        formState.residentialAddress.address
+                      }
                       name="residentialAddress.address"
                       type="text"
                       placeholder="Insert Address"
@@ -716,7 +768,10 @@ const Profile = () => {
                         borderRadius: "5px",
                       }}
                       select
-                      value={formState.residentialAddress && formState.residentialAddress.state}
+                      value={
+                        formState.residentialAddress &&
+                        formState.residentialAddress.state
+                      }
                       name="residentialAddress.state"
                       type="select"
                       placeholder="Select state"
@@ -725,10 +780,11 @@ const Profile = () => {
                       <MenuItem value="">
                         <em>Select state</em>
                       </MenuItem>
-                      {
-                        statesOfNigeria.map(state => <MenuItem key={`b-${state}`} value={state}>{state}</MenuItem>)
-                      }
-
+                      {statesOfNigeria.map((state) => (
+                        <MenuItem key={`b-${state}`} value={state}>
+                          {state}
+                        </MenuItem>
+                      ))}
                     </TentTextField>{" "}
                     <Stack direction="row" spacing={2}>
                       <Grid item lg={7} sm={7} md={7} xs={7}>
@@ -740,7 +796,10 @@ const Profile = () => {
                             backgroundColor: "action.hover",
                             borderRadius: "5px",
                           }}
-                          value={formState.residentialAddress && formState.residentialAddress.city}
+                          value={
+                            formState.residentialAddress &&
+                            formState.residentialAddress.city
+                          }
                           name="residentialAddress.city"
                           type="text"
                           placeholder="Select City"
@@ -756,7 +815,10 @@ const Profile = () => {
                             backgroundColor: "action.hover",
                             borderRadius: "5px",
                           }}
-                          value={formState.residentialAddress && formState.residentialAddress.zipCode}
+                          value={
+                            formState.residentialAddress &&
+                            formState.residentialAddress.zipCode
+                          }
                           name="residentialAddress.zipCode"
                           type="text"
                           placeholder="Zip code"
@@ -783,10 +845,11 @@ const Profile = () => {
                       <MenuItem value="">
                         <em>Select state</em>
                       </MenuItem>
-                      {
-                        statesOfNigeria.map(state => <MenuItem key={`b-${state}`} value={state}>{state}</MenuItem>)
-                      }
-
+                      {statesOfNigeria.map((state) => (
+                        <MenuItem key={`b-${state}`} value={state}>
+                          {state}
+                        </MenuItem>
+                      ))}
                     </TentTextField>{" "}
                     <TentTextField
                       required
@@ -807,7 +870,7 @@ const Profile = () => {
                         <em>Select status</em>
                       </MenuItem>
                       <MenuItem value="married">Married</MenuItem>
-                      <MenuItem value="single" >Single</MenuItem>
+                      <MenuItem value="single">Single</MenuItem>
                     </TentTextField>{" "}
                     <TentTextField
                       required
@@ -831,7 +894,10 @@ const Profile = () => {
                         backgroundColor: "action.hover",
                         borderRadius: "5px",
                       }}
-                      value={formState.businessAddress && formState.businessAddress.address}
+                      value={
+                        formState.businessAddress &&
+                        formState.businessAddress.address
+                      }
                       name="businessAddress.address"
                       type="text"
                       placeholder="Insert Address"
@@ -848,7 +914,10 @@ const Profile = () => {
                             backgroundColor: "action.hover",
                             borderRadius: "5px",
                           }}
-                          value={formState.businessAddress && formState.businessAddress.city}
+                          value={
+                            formState.businessAddress &&
+                            formState.businessAddress.city
+                          }
                           name="businessAddress.city"
                           type="text"
                           placeholder="Select City"
@@ -864,14 +933,16 @@ const Profile = () => {
                             backgroundColor: "action.hover",
                             borderRadius: "5px",
                           }}
-                          value={formState.businessAddress && formState.businessAddress.zipCode}
+                          value={
+                            formState.businessAddress &&
+                            formState.businessAddress.zipCode
+                          }
                           name="businessAddress.zipCode"
                           type="text"
                           placeholder="Zip code"
                           fullWidth
                         />
                       </Grid>
-
                     </Stack>
                     <Stack>
                       <TentTextField
@@ -883,7 +954,10 @@ const Profile = () => {
                           borderRadius: "5px",
                         }}
                         select
-                        value={formState.businessAddress && formState.businessAddress.state}
+                        value={
+                          formState.businessAddress &&
+                          formState.businessAddress.state
+                        }
                         name="businessAddress.state"
                         type="select"
                         placeholder="Select state"
@@ -892,10 +966,11 @@ const Profile = () => {
                         <MenuItem value={undefined}>
                           <em>Select state</em>
                         </MenuItem>
-                        {
-                          statesOfNigeria.map(state => <MenuItem key={`b-${state}`} value={state}>{state}</MenuItem>)
-                        }
-
+                        {statesOfNigeria.map((state) => (
+                          <MenuItem key={`b-${state}`} value={state}>
+                            {state}
+                          </MenuItem>
+                        ))}
                       </TentTextField>{" "}
                     </Stack>
                   </Stack>
@@ -941,7 +1016,9 @@ const Profile = () => {
                             backgroundColor: "action.hover",
                             borderRadius: "5px",
                           }}
-                          value={formState.nextOfKin && formState.nextOfKin.city}
+                          value={
+                            formState.nextOfKin && formState.nextOfKin.city
+                          }
                           name="nextOfKin.city"
                           type="text"
                           placeholder="Select City"
@@ -958,7 +1035,9 @@ const Profile = () => {
                             borderRadius: "5px",
                           }}
                           select
-                          value={formState.nextOfKin && formState.nextOfKin.state}
+                          value={
+                            formState.nextOfKin && formState.nextOfKin.state
+                          }
                           name="nextOfKin.state"
                           type="select"
                           placeholder="Select state"
@@ -967,10 +1046,11 @@ const Profile = () => {
                           <MenuItem value={undefined}>
                             <em>Select state</em>
                           </MenuItem>
-                          {
-                            statesOfNigeria.map(state => <MenuItem key={`b-${state}`} value={state}>{state}</MenuItem>)
-                          }
-
+                          {statesOfNigeria.map((state) => (
+                            <MenuItem key={`b-${state}`} value={state}>
+                              {state}
+                            </MenuItem>
+                          ))}
                         </TentTextField>{" "}
                       </Grid>
                     </Stack>
@@ -983,7 +1063,9 @@ const Profile = () => {
                         borderRadius: "5px",
                       }}
                       name="nextOfKin.phoneNumber"
-                      value={formState.nextOfKin && formState.nextOfKin.phoneNumber}
+                      value={
+                        formState.nextOfKin && formState.nextOfKin.phoneNumber
+                      }
                       type="text"
                       placeholder="Phone"
                       label="Next of Kin Phone"
@@ -997,7 +1079,9 @@ const Profile = () => {
                         borderRadius: "5px",
                       }}
                       name="nextOfKin.relationship"
-                      value={formState.nextOfKin && formState.nextOfKin.relationship}
+                      value={
+                        formState.nextOfKin && formState.nextOfKin.relationship
+                      }
                       type="text"
                       placeholder="Relationship"
                       label="What's your relationship"
@@ -1006,7 +1090,6 @@ const Profile = () => {
                 </Grid>
               </Grid>
             </form>
-
           </Stack>
         </Box>
       </Box>
